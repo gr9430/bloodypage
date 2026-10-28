@@ -627,6 +627,7 @@
       ctx.strokeStyle = INK; ctx.lineWidth = 4;
       ctx.strokeRect(x, top, barW, barH);
       outlinedText(ctx, f.def.name.toUpperCase(), i === 0 ? x : x + barW, top + barH + 18, 20, '#fff', { align: i === 0 ? 'left' : 'right' });
+      if (i === 1 && m.cpu) plainText(ctx, `CPU · ${m.cpu.toUpperCase()}`, x + barW, top + barH + 42, 15, '#4ab0ff', 'right', LOUD);
       // round-win pips next to the timer
       for (let k = 0; k < CONFIG.roundsToWin; k++) {
         const px = i === 0 ? x + barW - 14 - k * 22 : x + 14 + k * 22;
@@ -692,8 +693,7 @@
 
   // ---------- Screens ----------
 
-  function renderSelect(ctx, sel, tick) {
-    frameTick = tick;
+  function menuBackground(ctx) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, '#2a1240');
     g.addColorStop(1, '#7a2a1a');
@@ -701,6 +701,61 @@
     ctx.fillRect(0, 0, W, H);
     outlinedText(ctx, 'CITATION DEATHMATCH', W / 2, 44, 52, '#ffe14d');
     plainText(ctx, 'Settle it with your fists. Cite your sources.', W / 2, 84, 18, '#fff3d6');
+  }
+
+  const DIFFICULTY_BLURBS = {
+    easy: 'Slow, sloppy, rarely blocks. A gentle seminar.',
+    medium: 'Blocks about half the time and cites its sources.',
+    hard: 'Blocks, punishes, dodges. Peer review.',
+  };
+
+  // The mode and difficulty screens: a vertical list with a cursor.
+  function renderMenu(ctx, st, tick) {
+    frameTick = tick;
+    menuBackground(ctx);
+    const isMode = st.screen === 'mode';
+    const options = isMode ? CD.MODE_OPTIONS : CD.aiLevels.map((l) => l.toUpperCase());
+    const cursor = isMode ? st.modeCursor : st.diffCursor;
+    outlinedText(ctx, isMode ? 'CHOOSE YOUR FORMAT' : 'HOW TOUGH IS THE REVIEWER?', W / 2, 140, 30, '#fff');
+    options.forEach((label, k) => {
+      const y = 205 + k * 62;
+      const on = k === cursor;
+      if (on) {
+        ctx.fillStyle = 'rgba(255,225,77,0.15)';
+        ctx.fillRect(W / 2 - 230, y - 26, 460, 52);
+        ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 4;
+        ctx.strokeRect(W / 2 - 230, y - 26, 460, 52);
+      }
+      outlinedText(ctx, label, W / 2, y, on ? 32 : 26, on ? '#ffe14d' : '#d8c8ff');
+    });
+    if (!isMode) plainText(ctx, DIFFICULTY_BLURBS[CD.aiLevels[cursor]], W / 2, 205 + options.length * 62, 18, '#fff3d6');
+    // the 1971 grudge match, waiting in the wings
+    drawFighterRig(ctx, CD.FIGHTERS.foucault.look, 110, H - 40, 1, 'idle', 0.9);
+    drawFighterRig(ctx, CD.FIGHTERS.chomsky.look, W - 110, H - 40, -1, 'idle', 0.9);
+    const km = CD.KEYMAP[0];
+    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.punch)} or Enter: confirm` + (isMode ? '' : '   ·   Esc: back') + '   ·   M: mute', W / 2, H - 16, 14, '#d8c8ff');
+  }
+
+  function controlsColumn(ctx, km, x, ty, title, color) {
+    outlinedText(ctx, title, x, ty, 22, color, { align: 'left' });
+    const rows = [
+      ['Move', [km.up, km.left, km.down, km.right].map(keyLabel).join(' ')],
+      ['Punch / Kick', `${keyLabel(km.punch)} / ${keyLabel(km.kick)}`],
+      ['Special', keyLabel(km.special)],
+      ['Cite (summon)', keyLabel(km.cite)],
+      ['Block', 'hold away'],
+    ];
+    rows.forEach(([label, keys], r) => {
+      plainText(ctx, label, x, ty + 26 + r * 19, 15, '#fff3d6', 'left');
+      plainText(ctx, keys, x + 150, ty + 26 + r * 19, 15, '#fff', 'left', LOUD);
+    });
+  }
+
+  // `cpu` is the difficulty when playing the computer, or null for 2 players.
+  function renderSelect(ctx, sel, tick, cpu = null) {
+    frameTick = tick;
+    menuBackground(ctx);
+    const p2Name = cpu ? 'CPU' : 'P2';
 
     const cardW = 210, gap = 20, x0 = (W - (cardW * 4 + gap * 3)) / 2, cy = 110, cardH = 250;
     CD.fighterIds.forEach((id, k) => {
@@ -711,37 +766,31 @@
       const p1 = sel.cursor[0] === k, p2 = sel.cursor[1] === k;
       const mirror = p1 && p2;
       const pose = (p1 && sel.locked[0]) || (p2 && sel.locked[1]) ? 'win' : 'idle';
-      drawFighterRig(ctx, p2 && !p1 ? def.altLook : def.look, x + cardW / 2, cy + 200, 1, pose, 0.82);
+      drawFighterRig(ctx, def.look, x + cardW / 2, cy + 200, 1, pose, 0.82);
       outlinedText(ctx, def.name.toUpperCase(), x + cardW / 2, cy + 222, 19, '#fff', { maxWidth: cardW - 10 });
       plainText(ctx, def.special.name, x + cardW / 2, cy + 242, 14, '#ffb3f0');
       ctx.lineWidth = 5;
       if (p1) { ctx.strokeStyle = '#ff5a4a'; ctx.strokeRect(x - 2, cy - 2, cardW + 4, cardH + 4); }
       if (p2) { ctx.strokeStyle = '#4ab0ff'; ctx.strokeRect(x + (mirror ? 5 : -2), cy + (mirror ? 5 : -2), cardW - (mirror ? 10 : -4), cardH - (mirror ? 10 : -4)); }
-      if (p1) outlinedText(ctx, sel.locked[0] ? 'P1 READY' : 'P1', x + 40, cy + 18, 20, '#ff5a4a', { align: 'center' });
-      if (p2) outlinedText(ctx, sel.locked[1] ? 'P2 READY' : 'P2', x + cardW - 40, cy + 18, 20, '#4ab0ff', { align: 'center' });
+      if (p1) outlinedText(ctx, sel.locked[0] ? 'P1 READY' : 'P1', x + 12, cy + 18, 20, '#ff5a4a', { align: 'left' });
+      if (p2) outlinedText(ctx, sel.locked[1] ? `${p2Name} READY` : p2Name, x + cardW - 12, cy + 18 + (mirror ? 24 : 0), 20, '#4ab0ff', { align: 'right' });
     });
 
     // controls table
     const ty = 392;
-    for (let i = 0; i < 2; i++) {
-      const km = CD.KEYMAP[i];
-      const x = i === 0 ? 120 : W / 2 + 70;
-      const color = i === 0 ? '#ff5a4a' : '#4ab0ff';
-      outlinedText(ctx, `PLAYER ${i + 1}`, x, ty, 22, color, { align: 'left' });
-      const rows = [
-        ['Move', [km.up, km.left, km.down, km.right].map(keyLabel).join(' ')],
-        ['Punch / Kick', `${keyLabel(km.punch)} / ${keyLabel(km.kick)}`],
-        ['Special', keyLabel(km.special)],
-        ['Cite (summon)', keyLabel(km.cite)],
-        ['Block', 'hold away'],
-      ];
-      rows.forEach(([label, keys], r) => {
-        plainText(ctx, label, x, ty + 26 + r * 19, 15, '#fff3d6', 'left');
-        plainText(ctx, keys, x + 150, ty + 26 + r * 19, 15, '#fff', 'left', LOUD);
-      });
-    }
     const p1k = CD.KEYMAP[0], p2k = CD.KEYMAP[1];
-    plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}  ·  ${keyLabel(p2k.left)}/${keyLabel(p2k.right)} + ${keyLabel(p2k.punch)}   ·   Enter: start   ·   Esc: back   ·   M: mute`, W / 2, H - 16, 14, '#d8c8ff');
+    controlsColumn(ctx, p1k, 120, ty, 'PLAYER 1', '#ff5a4a');
+    if (cpu) {
+      const x = W / 2 + 70;
+      outlinedText(ctx, `COMPUTER · ${cpu.toUpperCase()}`, x, ty, 22, '#4ab0ff', { align: 'left' });
+      plainText(ctx, DIFFICULTY_BLURBS[cpu], x, ty + 30, 15, '#fff3d6', 'left');
+      plainText(ctx, sel.locked[0] ? `Now pick the computer's fighter.` : 'Pick your fighter first,', x, ty + 56, 15, '#fff', 'left');
+      plainText(ctx, sel.locked[0] ? '' : `then the computer's.`, x, ty + 75, 15, '#fff', 'left');
+      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}   ·   ${keyLabel(p1k.kick)}: undo   ·   Esc: back   ·   M: mute`, W / 2, H - 16, 14, '#d8c8ff');
+    } else {
+      controlsColumn(ctx, p2k, W / 2 + 70, ty, 'PLAYER 2', '#4ab0ff');
+      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}  ·  ${keyLabel(p2k.left)}/${keyLabel(p2k.right)} + ${keyLabel(p2k.punch)}   ·   Kick: undo   ·   Esc: back   ·   M: mute`, W / 2, H - 16, 14, '#d8c8ff');
+    }
   }
 
   function renderWinner(ctx, m, tick) {
@@ -754,12 +803,13 @@
     drawFighterRig(ctx, m.fighters[w].look, W / 2 - 60, FLOOR, 1, 'win', 1.5);
     outlinedText(ctx, m.banner || '', W / 2, 70, 46, '#ffe14d', { maxWidth: W - 60 });
     plainText(ctx, `“${m.fighters[w].def.winQuote}”`, W / 2, 120, 22, '#fff3d6');
-    plainText(ctx, 'Enter: rematch  ·  Esc: character select', W / 2, H - 18, 16, '#d8c8ff');
+    plainText(ctx, 'Enter: rematch  ·  Esc: main menu', W / 2, H - 18, 16, '#d8c8ff');
+    if (m.cpu) plainText(ctx, `vs. computer · ${m.cpu}`, W / 2, 150, 15, '#4ab0ff');
   }
 
   function drawMuteIcon(ctx, muted) {
     plainText(ctx, muted ? '🔇 M' : '🔊 M', W - 12, H - 52, 14, 'rgba(255,255,255,0.6)', 'right');
   }
 
-  Object.assign(CD, { pushRenderEvents, clearRenderEvents, tickRenderFx, keyLabel, drawFighterRig, poseFor, renderMatch, renderSelect, renderWinner, drawMuteIcon });
+  Object.assign(CD, { pushRenderEvents, clearRenderEvents, tickRenderFx, keyLabel, drawFighterRig, poseFor, renderMatch, renderMenu, renderSelect, renderWinner, drawMuteIcon });
 })(globalThis.CD = globalThis.CD || {});

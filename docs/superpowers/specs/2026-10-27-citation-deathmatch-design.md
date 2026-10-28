@@ -18,9 +18,19 @@ Bloody Rage was the starting reference for "a simple two-player browser fighter.
 4. A complete match loop: character select → best of 3 rounds with health bars and a round timer → winner screen → rematch / back to select.
 5. Adding a new theorist or a new citation means **editing a data entry**, not writing new engine code. The roster will grow, and the user will supply the real citation lists later.
 
+## Added 2026-10-28: computer opponent
+
+- A main menu offers **1 Player vs Computer** or **2 Players**. Choosing the computer leads to an **Easy / Medium / Hard** screen.
+- Against the computer, the human picks their own fighter and then the computer's. The human plays as P1 and the computer as P2.
+- The computer is a Controller that presses the same virtual buttons as a player, delayed by its reaction time. It has no extra damage and doesn't read inputs early. It uses seeded randomness.
+- Levels:
+  - **Easy:** slow, rarely blocks, mostly random swings.
+  - **Medium:** blocks about half the time, uses its special and cites.
+  - **Hard:** quick, guards at close range, punishes, dodges projectiles.
+- Enter rematches at the same difficulty. Esc from the winner screen returns to the main menu.
+
 ## Non-goals (for now)
 
-- Computer opponent. This is the planned **next** step. Structure input so an AI controller can later drive a fighter the same way a keyboard does.
 - Online play, gamepads, mobile/touch.
 - Super meters, combo systems, multi-character tag teams, story mode.
 - Final citation lists. Use placeholders (below).

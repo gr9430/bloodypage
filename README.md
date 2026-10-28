@@ -6,6 +6,12 @@ A two-player browser fighting game in which critical theorists settle their deba
 
 Double-click `index.html`. You don't need to install anything or run a server.
 
+The first screen asks for **1 Player vs Computer** or **2 Players**:
+- Choose with W/S (or ↑/↓) and confirm with F (or Enter).
+- Against the computer, pick **Easy**, **Medium** or **Hard**.
+- Then pick your fighter, followed by the computer's, using A/D + F. G undoes the last pick.
+- You play as Player 1, and the computer controls the right-hand fighter.
+
 | Action | Player 1 | Player 2 |
 |---|---|---|
 | Move / jump / crouch | W A S D | Arrow keys |
@@ -15,13 +21,13 @@ Double-click `index.html`. You don't need to install anything or run a server.
 | Cite (summon a scholar) | R | O |
 | Block | hold away from your opponent | hold away from your opponent |
 
-On the character select screen:
-- Move your cursor with left/right and lock in with Punch. Kick unlocks.
+On the character select screen in 2-player mode:
+- Each player moves their cursor with left/right and locks in with Punch. Kick unlocks.
 - The match starts once both players are ready.
 
 Other keys:
-- Enter: rematch
-- Esc: back to character select
+- Enter: rematch (same fighters, same difficulty)
+- Esc: back a screen (from the winner screen, back to the main menu)
 - M: mute
 
 Matches are best of three rounds, with 100 HP and 60 seconds per round. A round that times out with both players on equal HP is a draw. A match still tied after round 3 goes to sudden death.

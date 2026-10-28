@@ -1,6 +1,6 @@
 const test = require('node:test'); const assert = require('node:assert');
 const { load, fakeCtx } = require('./helpers');
-const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'render');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'menu', 'render');
 
 const POSES = ['idle', 'walk', 'jump', 'crouch', 'punch', 'kick', 'special', 'block', 'hurt', 'ko', 'win'];
 const KINDS = ['stunZone', 'projectile', 'drop', 'burst', 'rush'];
@@ -78,4 +78,34 @@ test('renderWinner shows banner and win quote', () => {
   const all = ctx.texts.join('|');
   assert.ok(all.includes('WALTER ONG WINS THE ARGUMENT'));
   assert.ok(all.includes(CD.FIGHTERS.ong.winQuote));
+});
+
+test('renderMenu shows the mode options', () => {
+  const ctx = fakeCtx();
+  const st = CD.createMenuState();
+  CD.renderMenu(ctx, st, 1);
+  const all = ctx.texts.join('|');
+  for (const o of CD.MODE_OPTIONS) assert.ok(all.includes(o), o);
+});
+test('renderMenu shows the difficulty levels', () => {
+  const ctx = fakeCtx();
+  const st = CD.createMenuState(); st.screen = 'difficulty';
+  CD.renderMenu(ctx, st, 1);
+  const all = ctx.texts.join('|');
+  for (const l of ['EASY', 'MEDIUM', 'HARD']) assert.ok(all.includes(l), l);
+});
+test('renderSelect labels the computer as CPU and shows the difficulty', () => {
+  const ctx = fakeCtx();
+  CD.renderSelect(ctx, { cursor: [0, 1], locked: [true, false] }, 3, 'hard');
+  const all = ctx.texts.join('|');
+  assert.ok(all.includes('CPU'));
+  assert.ok(all.includes('HARD'));
+  assert.ok(!all.includes('PLAYER 2'));
+});
+test('match HUD marks the computer side', () => {
+  const m = CD.createMatch('foucault', 'chomsky');
+  m.cpu = 'easy';
+  const ctx = fakeCtx();
+  CD.renderMatch(ctx, m, 1);
+  assert.ok(ctx.texts.join('|').includes('CPU · EASY'));
 });

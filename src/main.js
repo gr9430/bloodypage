@@ -2,7 +2,6 @@
   const { CONFIG, KEYMAP } = CD;
   const STEP_MS = 1000 / CONFIG.tickRate;
   const WINNER_DELAY = 120;
-  const AUTOSTART_TICKS = 30;
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -11,53 +10,38 @@
   window.addEventListener('keydown', () => audio.unlock());
 
   const game = {
-    screen: 'select',
-    sel: { cursor: [0, 1], locked: [false, false], countdown: 0 },
+    screen: 'menu',
+    menu: CD.createMenuState(),
     match: null,
+    ai: null,
     endTimer: 0,
     tick: 0,
   };
 
-  function startMatch(p1, p2) {
+  // cpu is a difficulty level, or null for two players.
+  function startMatch(p1, p2, cpu) {
     CD.clearRenderEvents();
     game.match = CD.createMatch(p1, p2);
+    game.match.cpu = cpu;
+    game.ai = cpu ? CD.createAI(() => game.match, 1, cpu, Date.now()) : null;
     game.endTimer = 0;
     game.screen = 'fight';
   }
 
-  function toSelect() {
-    game.sel.locked = [false, false];
-    game.sel.countdown = 0;
-    game.screen = 'select';
-  }
-
-  function updateSelect() {
-    const sel = game.sel;
-    const n = CD.fighterIds.length;
-    for (let i = 0; i < 2; i++) {
-      const km = KEYMAP[i];
-      if (!sel.locked[i]) {
-        if (keyboard.pressedGlobal(km.left)) sel.cursor[i] = (sel.cursor[i] + n - 1) % n;
-        if (keyboard.pressedGlobal(km.right)) sel.cursor[i] = (sel.cursor[i] + 1) % n;
-        if (keyboard.pressedGlobal(km.punch)) { sel.locked[i] = true; audio.play({ type: 'cite' }); }
-      } else if (keyboard.pressedGlobal(km.kick)) {
-        sel.locked[i] = false;
-      }
-    }
-    if (sel.locked[0] && sel.locked[1]) {
-      sel.countdown++;
-      if (sel.countdown >= AUTOSTART_TICKS || keyboard.pressedGlobal('Enter')) {
-        startMatch(CD.fighterIds[sel.cursor[0]], CD.fighterIds[sel.cursor[1]]);
-      }
-    } else {
-      sel.countdown = 0;
-    }
+  function updateMenu() {
+    const start = CD.stepMenu(game.menu, keyboard.pressedGlobal);
+    if (start) startMatch(start.p1, start.p2, start.cpu);
   }
 
   function updateFight() {
-    if (keyboard.pressedGlobal('Escape')) return toSelect();
-    const inputs = keyboard.controllers.map((c) => c.read());
-    const events = CD.stepMatch(game.match, inputs);
+    if (keyboard.pressedGlobal('Escape')) {
+      CD.backToSelect(game.menu);
+      game.screen = 'menu';
+      return;
+    }
+    const p1 = keyboard.controllers[0].read();
+    const p2 = game.ai ? game.ai.read() : keyboard.controllers[1].read();
+    const events = CD.stepMatch(game.match, [p1, p2]);
     CD.tickRenderFx();
     CD.pushRenderEvents(events);
     for (const e of events) audio.play(e);
@@ -65,22 +49,29 @@
   }
 
   function updateWinner() {
-    if (keyboard.pressedGlobal('Enter')) startMatch(...game.match.fighterIds);
-    else if (keyboard.pressedGlobal('Escape')) toSelect();
+    const m = game.match;
+    if (keyboard.pressedGlobal('Enter')) {
+      startMatch(m.fighterIds[0], m.fighterIds[1], m.cpu);
+    } else if (keyboard.pressedGlobal('Escape')) {
+      game.menu = CD.createMenuState();
+      game.screen = 'menu';
+    }
   }
 
   function update() {
     game.tick++;
     if (keyboard.pressedGlobal('KeyM')) audio.toggleMute();
-    if (game.screen === 'select') updateSelect();
+    if (game.screen === 'menu') updateMenu();
     else if (game.screen === 'fight') updateFight();
     else updateWinner();
     keyboard.endTick();
   }
 
   function render() {
-    if (game.screen === 'select') CD.renderSelect(ctx, game.sel, game.tick);
-    else if (game.screen === 'fight') CD.renderMatch(ctx, game.match, game.tick);
+    if (game.screen === 'menu') {
+      if (game.menu.screen === 'select') CD.renderSelect(ctx, game.menu.sel, game.tick, game.menu.cpu);
+      else CD.renderMenu(ctx, game.menu, game.tick);
+    } else if (game.screen === 'fight') CD.renderMatch(ctx, game.match, game.tick);
     else CD.renderWinner(ctx, game.match, game.tick);
     CD.drawMuteIcon(ctx, audio.muted);
   }

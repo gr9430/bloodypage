@@ -24,5 +24,7 @@
     { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', punch: 'KeyK', kick: 'KeyL', special: 'Semicolon', cite: 'KeyO' },
   ];
 
-  Object.assign(CD, { CONFIG, KEYMAP });
+  const aiLevels = ['easy', 'medium', 'hard'];
+
+  Object.assign(CD, { CONFIG, KEYMAP, aiLevels });
 })(globalThis.CD = globalThis.CD || {});
