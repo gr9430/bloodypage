@@ -52,6 +52,8 @@
     for (const a of assists) {
       const owner = fighters[a.owner], target = fighters[1 - a.owner];
       a.timer--;
+      // Keep facing the opponent, even if the owner crosses over mid-summon.
+      if (a.phase !== 'exit') a.facing = target.x >= (a.phase === 'enter' ? owner.x : a.x) ? 1 : -1;
       if (a.phase === 'enter') {
         a.x += (assistGoal(a, owner, target) - a.x) * 0.2;
         if (a.timer <= 0) { a.phase = 'attack'; a.timer = ATTACK_TICKS; }

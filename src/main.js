@@ -58,6 +58,7 @@
     if (keyboard.pressedGlobal('Escape')) return toSelect();
     const inputs = keyboard.controllers.map((c) => c.read());
     const events = CD.stepMatch(game.match, inputs);
+    CD.tickRenderFx();
     CD.pushRenderEvents(events);
     for (const e of events) audio.play(e);
     if (game.match.phase === 'matchEnd' && ++game.endTimer >= WINNER_DELAY) game.screen = 'winner';

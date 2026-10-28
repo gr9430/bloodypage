@@ -27,6 +27,10 @@
     }
   }
 
+  // After a stun, a fighter can't be stunned again for a while, so stun
+  // specials can't be chained into an infinite.
+  const STUN_IMMUNITY_EXTRA = 60;
+
   // Applies one hit to a defender. Blocking only works against hits coming
   // from the side the defender faces.
   function applyHit(defender, hit) {
@@ -46,9 +50,10 @@
     if (defender.hp === 0) {
       defender.state = 'ko';
       defender.stateTimer = 0;
-    } else if (hit.stunTicks) {
+    } else if (hit.stunTicks && defender.stunImmune === 0) {
       defender.state = 'stunned';
       defender.stateTimer = hit.stunTicks;
+      defender.stunImmune = hit.stunTicks + STUN_IMMUNITY_EXTRA;
     } else {
       defender.state = 'hitstun';
       defender.stateTimer = hit.hitstun;
@@ -76,12 +81,20 @@
     return p ? applyPending(p) : [];
   }
 
-  // Both fighters' hits are found before either lands, so a trade on the
-  // same tick hits both ways (and a double KO is possible).
-  function resolveTrade(a, b) {
-    const pending = [pendingHit(a, b), pendingHit(b, a)].filter(Boolean);
+  // Both fighters' hits are found before any hit lands (including effects,
+  // which the match applies in between), so a same-tick trade hits both
+  // ways and a double KO is possible.
+  function findHits(a, b) {
+    return [pendingHit(a, b), pendingHit(b, a)].filter(Boolean);
+  }
+
+  function applyHits(pending) {
     return pending.flatMap(applyPending);
   }
 
-  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, resolveFighterHits, resolveTrade });
+  function resolveTrade(a, b) {
+    return applyHits(findHits(a, b));
+  }
+
+  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, resolveFighterHits, findHits, applyHits, resolveTrade });
 })(globalThis.CD = globalThis.CD || {});

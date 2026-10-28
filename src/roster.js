@@ -14,7 +14,7 @@
       look: { skin: '#f1c9a5', hair: 'bald', hairColor: '#e8b896', glasses: 'round', outfit: 'turtleneck', outfitColor: '#1b1b1f', accentColor: '#f5f5f5', headScale: 1.25 },
       altLook: { skin: '#f1c9a5', hair: 'bald', hairColor: '#e8b896', glasses: 'round', outfit: 'turtleneck', outfitColor: '#f2f2f2', accentColor: '#1b1b1f', headScale: 1.25 },
       moves: moves(5, 8),
-      special: { name: 'Panopticon', kind: 'stunZone', damage: 6, startup: 10, recovery: 24, knockback: 2, stunTicks: 60 },
+      special: { name: 'Panopticon', kind: 'stunZone', damage: 6, startup: 10, recovery: 24, knockback: 2, stunTicks: 45 },
       citations: ['Gilles Deleuze', 'Friedrich Nietzsche', 'Judith Butler'],
       assist: { kind: 'stunZone', damage: 5, knockback: 2, stunTicks: 45 },
       winQuote: 'Where there is power, there is resistance. You resisted. Poorly.',

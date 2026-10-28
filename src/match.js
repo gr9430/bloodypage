@@ -87,6 +87,7 @@
       }
       CD.tickCitation(m.cites[i]);
     }
+    const pendingHits = CD.findHits(a, b);
     const as = CD.updateAssists(m.assists, m.fighters);
     m.assists = as.assists;
     m.effects.push(...as.newEffects);
@@ -94,7 +95,7 @@
     const ef = CD.updateEffects(m.effects, m.fighters);
     m.effects = ef.effects;
     events.push(...ef.events);
-    events.push(...CD.resolveTrade(a, b));
+    events.push(...CD.applyHits(pendingHits));
     CD.separateFighters(a, b);
     m.timer--;
     checkRoundEnd(m, events);

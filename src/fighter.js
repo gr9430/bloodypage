@@ -18,6 +18,7 @@
       stateTimer: 0,
       attack: null,
       kb: 0,
+      stunImmune: 0,
       blocking: false,
       crouching: false,
       onGround: true,
@@ -61,6 +62,7 @@
   function updateFighter(f, input, opponent) {
     const events = [];
 
+    if (f.stunImmune > 0) f.stunImmune--;
     if (f.state === 'hitstun' || f.state === 'blockstun' || f.state === 'stunned') {
       f.stateTimer--;
       if (f.stateTimer <= 0) f.state = f.onGround ? 'idle' : 'jump';

@@ -24,7 +24,8 @@
     fx = [];
   }
 
-  function tickFx() {
+  // Called once per simulation tick, so effects last the same on any display.
+  function tickRenderFx() {
     for (const f of fx) f.ttl--;
     fx = fx.filter((f) => f.ttl > 0);
   }
@@ -677,7 +678,6 @@
     drawFx(ctx, m);
     drawHud(ctx, m);
     drawBanner(ctx, m);
-    tickFx();
   }
 
   // ---------- Screens ----------
@@ -751,5 +751,5 @@
     plainText(ctx, muted ? '🔇 M' : '🔊 M', W - 12, H - 52, 14, 'rgba(255,255,255,0.6)', 'right');
   }
 
-  Object.assign(CD, { pushRenderEvents, clearRenderEvents, keyLabel, drawFighterRig, poseFor, renderMatch, renderSelect, renderWinner, drawMuteIcon });
+  Object.assign(CD, { pushRenderEvents, clearRenderEvents, tickRenderFx, keyLabel, drawFighterRig, poseFor, renderMatch, renderSelect, renderWinner, drawMuteIcon });
 })(globalThis.CD = globalThis.CD || {});
