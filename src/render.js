@@ -186,8 +186,8 @@
         j.frontHand = [30, -150];
         break;
       case 'win':
-        j.backHand = [-40, -160];
-        j.frontHand = [40, -160];
+        j.backHand = [-48, -158];
+        j.frontHand = [56, -158];
         j.face = 'smile';
         j.shoulder += Math.sin(t * 0.25) * 3;
         break;
@@ -342,6 +342,10 @@
 
     drawTorso(ctx, look, j.hip, j.shoulder, j.lean);
 
+    // A raised front arm goes behind the head so it doesn't cover the face.
+    const raised = j.frontHand[1] < j.shoulder - 30;
+    if (raised) frontArm(ctx, look, j);
+
     // head
     ctx.save();
     ctx.translate(j.lean + 4, j.shoulder - r * 0.85);
@@ -351,13 +355,16 @@
     drawFace(ctx, look, r, j.face);
     ctx.restore();
 
-    // front arm over the body
-    limb(ctx, 14 + j.lean, j.shoulder + 8, j.frontHand[0], j.frontHand[1], 10, look.outfitColor, 8);
-    blob(ctx, j.frontHand[0], j.frontHand[1], 9, 9, look.skin, 9);
+    if (!raised) frontArm(ctx, look, j);
 
     ctx.restore();
 
     if (pose === 'ko') drawDizzyStars(ctx, x - facing * 110, y - 40);
+  }
+
+  function frontArm(ctx, look, j) {
+    limb(ctx, 14 + j.lean, j.shoulder + 8, j.frontHand[0], j.frontHand[1], 10, look.outfitColor, 8);
+    blob(ctx, j.frontHand[0], j.frontHand[1], 9, 9, look.skin, 9);
   }
 
   function drawDizzyStars(ctx, x, y) {
@@ -532,6 +539,7 @@
     ctx.save();
     ctx.font = `15px ${CRUDE}`;
     const w = ctx.measureText(name).width + 16;
+    x = Math.max(w / 2 + 4, Math.min(W - w / 2 - 4, x));
     ctx.fillStyle = '#fffbe8';
     ctx.strokeStyle = INK;
     ctx.lineWidth = 2;

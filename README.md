@@ -1,0 +1,84 @@
+# Citation Deathmatch
+
+A two-player browser fighting game in which critical theorists settle their debates with their fists. To call in backup, you cite someone.
+
+## Play
+
+Double-click `index.html`. You don't need to install anything or run a server.
+
+| Action | Player 1 | Player 2 |
+|---|---|---|
+| Move / jump / crouch | W A S D | Arrow keys |
+| Punch | F | K |
+| Kick | G | L |
+| Special | H | ; |
+| Cite (summon a scholar) | R | O |
+| Block | hold away from your opponent | hold away from your opponent |
+
+On the character select screen:
+- Move your cursor with left/right and lock in with Punch. Kick unlocks.
+- The match starts once both players are ready.
+
+Other keys:
+- Enter: rematch
+- Esc: back to character select
+- M: mute
+
+Matches are best of three rounds, with 100 HP and 60 seconds per round. A round that times out with both players on equal HP is a draw. A match still tied after round 3 goes to sudden death.
+
+Each citation calls in the next scholar on your list. That scholar runs in, attacks once and leaves. You then wait about 8 seconds before you can cite again.
+
+## Add a citation
+
+Open `src/roster.js` and edit a fighter's `citations` list. **A name is enough:**
+
+```js
+citations: ['Eve Tuck', 'K. Wayne Yang', 'Walter Mignolo'],
+```
+
+Any name that isn't defined elsewhere gets a generic look (made up from the name, so it's always the same) and a charging attack. A name that matches a playable fighter, such as `'Walter Mignolo'`, summons that fighter with their own look.
+
+To give a summoned scholar a custom look or attack, add an entry to `SCHOLARS` in the same file:
+
+```js
+'Eve Tuck': {
+  name: 'Eve Tuck',
+  look: { skin: '#d9a77e', hair: 'swept', hairColor: '#2b2018', glasses: 'none',
+          outfit: 'scarf', outfitColor: '#3a5a7a', accentColor: '#e0a800', headScale: 1.15 },
+  assist: { kind: 'projectile', damage: 7, knockback: 5 },
+},
+```
+
+The look options are:
+- `hair`: `bald`, `swept`, `slick`, `white`
+- `glasses`: `round`, `big`, `none`
+- `outfit`: `turtleneck`, `sweater`, `suit`, `scarf`
+
+The `assist.kind` options are:
+- `rush`: charges across the stage
+- `projectile`: a thrown object
+- `drop`: something falls from above
+- `stunZone`: a delayed stun
+- `burst`: a close-range blast with big knockback
+
+## Add a playable fighter
+
+Add an entry to `FIGHTERS` in `src/roster.js`. Copy an existing one to start. Then add its id to `fighterIds`. Each fighter needs:
+- `look` and `altLook` (the alternate colors are used in mirror matches)
+- `moves`
+- a `special` that uses one of the assist kinds above
+- `citations`
+- `assist` (used when someone else cites this fighter)
+- `winQuote`
+
+## Change the controls
+
+Edit `KEYMAP` in `src/config.js`. The values are `KeyboardEvent.code` names.
+
+## Develop
+
+```
+npm test
+```
+
+This runs the game-logic tests with Node's built-in test runner (Node 20+). There are no dependencies to install.
