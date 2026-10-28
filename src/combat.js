@@ -56,15 +56,32 @@
     return 'hit';
   }
 
-  function resolveFighterHits(attacker, defender) {
+  // Finds a connecting normal attack without applying it yet.
+  function pendingHit(attacker, defender) {
     const hb = CD.attackHitbox(attacker);
-    if (!hb || !rectsOverlap(hb, CD.hurtbox(defender))) return [];
-    attacker.attack.hasHit = true;
-    const m = attacker.def.moves[attacker.attack.key];
-    const result = applyHit(defender, { damage: m.damage, knockback: m.knockback, hitstun: m.hitstun, fromX: attacker.x });
-    if (result === 'ignored') return [];
-    return [{ type: result, player: attacker.player, x: hb.x + hb.w / 2, y: hb.y + hb.h / 2 }];
+    if (!hb || !rectsOverlap(hb, CD.hurtbox(defender))) return null;
+    return { attacker, defender, hb, move: attacker.def.moves[attacker.attack.key] };
   }
 
-  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, resolveFighterHits });
+  function applyPending(p) {
+    if (p.attacker.attack) p.attacker.attack.hasHit = true;
+    const { move, hb } = p;
+    const result = applyHit(p.defender, { damage: move.damage, knockback: move.knockback, hitstun: move.hitstun, fromX: p.attacker.x });
+    if (result === 'ignored') return [];
+    return [{ type: result, player: p.attacker.player, x: hb.x + hb.w / 2, y: hb.y + hb.h / 2 }];
+  }
+
+  function resolveFighterHits(attacker, defender) {
+    const p = pendingHit(attacker, defender);
+    return p ? applyPending(p) : [];
+  }
+
+  // Both fighters' hits are found before either lands, so a trade on the
+  // same tick hits both ways (and a double KO is possible).
+  function resolveTrade(a, b) {
+    const pending = [pendingHit(a, b), pendingHit(b, a)].filter(Boolean);
+    return pending.flatMap(applyPending);
+  }
+
+  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, resolveFighterHits, resolveTrade });
 })(globalThis.CD = globalThis.CD || {});
