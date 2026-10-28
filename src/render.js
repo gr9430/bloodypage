@@ -311,6 +311,11 @@
         quad(ctx, [[-12 + lean, top], [12 + lean, top], [lean, top + 26]], '#f6f6f6', 43);
         quad(ctx, [[-4 + lean, top + 4], [4 + lean, top + 4], [3 + lean * 0.5, top + 32], [-3 + lean * 0.5, top + 32]], look.accentColor, 44);
         break;
+      case 'clerical':
+        // black shirt, white tab collar
+        quad(ctx, [[-13 + lean, top - 6], [13 + lean, top - 6], [14 + lean, top + 4], [-14 + lean, top + 4]], look.outfitColor, 47);
+        quad(ctx, [[-5 + lean, top - 4], [5 + lean, top - 4], [5 + lean, top + 3], [-5 + lean, top + 3]], look.accentColor, 48);
+        break;
       case 'scarf':
         quad(ctx, [[-20 + lean, top - 4], [20 + lean, top - 4], [18 + lean, top + 10], [-18 + lean, top + 10]], look.accentColor, 45);
         quad(ctx, [[6 + lean, top + 6], [16 + lean, top + 6], [14 + lean, top + 40], [4 + lean, top + 40]], look.accentColor, 46);
@@ -506,13 +511,18 @@
         break;
       }
       case 'burst': {
-        // a chain snapping apart
+        // a booming soundwave
         const spread = (10 - e.ttl) * 6;
-        star(ctx, cx, cy, 34 + spread, '#fff6a8');
-        for (let k = 0; k < 3; k++) {
-          ctx.lineWidth = 5; ctx.strokeStyle = '#888';
-          ctx.beginPath(); ctx.ellipse(cx - 40 - spread - k * 20, cy, 12, 8, 0, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.ellipse(cx + 40 + spread + k * 20, cy, 12, 8, 0, 0, Math.PI * 2); ctx.stroke();
+        star(ctx, cx, cy, 24 + spread / 2, '#fff6a8');
+        ctx.lineCap = 'round';
+        for (let k = 0; k < 4; k++) {
+          const r = 20 + k * 22 + spread;
+          ctx.lineWidth = 9; ctx.strokeStyle = INK;
+          ctx.beginPath(); ctx.arc(cx, cy, r, -0.7, 0.7); ctx.stroke();
+          ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI - 0.7, Math.PI + 0.7); ctx.stroke();
+          ctx.lineWidth = 5; ctx.strokeStyle = '#9fe8ff';
+          ctx.beginPath(); ctx.arc(cx, cy, r, -0.7, 0.7); ctx.stroke();
+          ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI - 0.7, Math.PI + 0.7); ctx.stroke();
         }
         break;
       }

@@ -52,20 +52,20 @@ test('medium is the message TV drops onto target and hits once', () => {
   assert.strictEqual(b.hp, 100 - CD.FIGHTERS.mcluhan.special.damage);
   assert.strictEqual(r.events.filter(x => x.type === 'hit').length, 1);
 });
-test('delinking knocks back further than kick', () => {
-  const [a, b] = vs('mignolo', 80);
+test('secondary orality knocks back further than kick', () => {
+  const [a, b] = vs('ong', 80);
   const x0 = b.x;
   run([CD.spawnSpecial(a, b)], [a, b], 2);
   for (let i = 0; i < 30; i++) CD.updateFighter(b, input(), a);
   const burstDist = b.x - x0;
-  const [c, d] = vs('mignolo', 80);
-  const k = CD.FIGHTERS.mignolo.moves.kick;
+  const [c, d] = vs('ong', 80);
+  const k = CD.FIGHTERS.ong.moves.kick;
   CD.applyHit(d, { damage: k.damage, knockback: k.knockback, hitstun: k.hitstun, fromX: c.x });
   for (let i = 0; i < 30; i++) CD.updateFighter(d, input(), c);
   assert.ok(burstDist > 2 * (d.x - x0), `${burstDist} vs ${d.x - x0}`);
 });
 test('effects never hit their owner', () => {
-  const [a, b] = vs('mignolo', 600);
+  const [a, b] = vs('ong', 600);
   const e = CD.spawnSpecial(a, b);
   e.x = a.x - 60; // sitting right on the owner
   run([e], [a, b], 15);

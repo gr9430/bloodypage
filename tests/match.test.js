@@ -78,7 +78,7 @@ test('time out with equal hp is DRAW', () => {
   assert.deepStrictEqual(m.wins, [0, 0]);
 });
 test('first to two wins ends match with "<NAME> WINS THE ARGUMENT"', () => {
-  const m = CD.createMatch('foucault', 'mignolo');
+  const m = CD.createMatch('mcluhan', 'ong');
   for (let r = 0; r < 2; r++) {
     toFight(m);
     m.fighters[0].hp = 0; m.fighters[0].state = 'ko';
@@ -86,7 +86,7 @@ test('first to two wins ends match with "<NAME> WINS THE ARGUMENT"', () => {
   }
   assert.strictEqual(m.phase, 'matchEnd');
   assert.strictEqual(m.winner, 1);
-  assert.strictEqual(m.banner, 'WALTER MIGNOLO WINS THE ARGUMENT');
+  assert.strictEqual(m.banner, 'WALTER ONG WINS THE ARGUMENT');
 });
 test('matchWinner', () => {
   assert.strictEqual(CD.matchWinner([2, 0], 2), 0);

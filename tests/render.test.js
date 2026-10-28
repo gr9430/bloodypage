@@ -71,11 +71,11 @@ test('renderSelect output includes every fighter and key label', () => {
   for (const id of CD.fighterIds) assert.ok(all.toUpperCase().includes(CD.FIGHTERS[id].name.toUpperCase()));
 });
 test('renderWinner shows banner and win quote', () => {
-  const m = CD.createMatch('mignolo', 'chomsky');
-  m.phase = 'matchEnd'; m.winner = 0; m.banner = 'WALTER MIGNOLO WINS THE ARGUMENT';
+  const m = CD.createMatch('ong', 'mcluhan');
+  m.phase = 'matchEnd'; m.winner = 0; m.banner = 'WALTER ONG WINS THE ARGUMENT';
   const ctx = fakeCtx();
   CD.renderWinner(ctx, m, 5);
   const all = ctx.texts.join('|');
-  assert.ok(all.includes('WALTER MIGNOLO WINS THE ARGUMENT'));
-  assert.ok(all.includes(CD.FIGHTERS.mignolo.winQuote));
+  assert.ok(all.includes('WALTER ONG WINS THE ARGUMENT'));
+  assert.ok(all.includes(CD.FIGHTERS.ong.winQuote));
 });

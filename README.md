@@ -36,7 +36,7 @@ Open `src/roster.js` and edit a fighter's `citations` list. **A name is enough:*
 citations: ['Eve Tuck', 'K. Wayne Yang', 'Walter Mignolo'],
 ```
 
-Any name that isn't defined elsewhere gets a generic look (made up from the name, so it's always the same) and a charging attack. A name that matches a playable fighter, such as `'Walter Mignolo'`, summons that fighter with their own look.
+Any name that isn't defined elsewhere gets a generic look (made up from the name, so it's always the same) and a charging attack. A name that matches a playable fighter, such as `'Walter Ong'`, summons that fighter with their own look.
 
 To give a summoned scholar a custom look or attack, add an entry to `SCHOLARS` in the same file:
 
@@ -52,7 +52,7 @@ To give a summoned scholar a custom look or attack, add an entry to `SCHOLARS` i
 The look options are:
 - `hair`: `bald`, `swept`, `slick`, `white`
 - `glasses`: `round`, `big`, `none`
-- `outfit`: `turtleneck`, `sweater`, `suit`, `scarf`
+- `outfit`: `turtleneck`, `sweater`, `suit`, `scarf`, `clerical`
 
 The `assist.kind` options are:
 - `rush`: charges across the stage

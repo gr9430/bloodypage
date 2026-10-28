@@ -41,20 +41,20 @@
       assist: { kind: 'drop', damage: 9, knockback: 4 },
       winQuote: 'You know nothing of my work.',
     },
-    mignolo: {
-      id: 'mignolo',
-      name: 'Walter Mignolo',
-      look: { skin: '#e6bf9a', hair: 'white', hairColor: '#f2f2f2', glasses: 'round', outfit: 'scarf', outfitColor: '#3d3a4a', accentColor: '#c0392b', headScale: 1.2 },
-      altLook: { skin: '#e6bf9a', hair: 'white', hairColor: '#f2f2f2', glasses: 'round', outfit: 'scarf', outfitColor: '#4a5a3d', accentColor: '#e0a800', headScale: 1.2 },
+    ong: {
+      id: 'ong',
+      name: 'Walter Ong',
+      look: { skin: '#efc9a8', hair: 'slick', hairColor: '#6e6e6e', glasses: 'big', outfit: 'clerical', outfitColor: '#16161a', accentColor: '#ffffff', headScale: 1.2 },
+      altLook: { skin: '#efc9a8', hair: 'slick', hairColor: '#6e6e6e', glasses: 'big', outfit: 'clerical', outfitColor: '#3d2a55', accentColor: '#ffffff', headScale: 1.2 },
       moves: moves(5, 9),
-      special: { name: 'Delinking', kind: 'burst', damage: 8, startup: 8, recovery: 22, knockback: 22 },
-      citations: ['Aníbal Quijano', 'Gloria Anzaldúa', 'Catherine Walsh'],
+      special: { name: 'Secondary Orality', kind: 'burst', damage: 8, startup: 8, recovery: 22, knockback: 22 },
+      citations: ['Eric Havelock', 'Milman Parry', 'Marshall McLuhan'],
       assist: { kind: 'burst', damage: 7, knockback: 16 },
-      winQuote: 'Consider yourself delinked.',
+      winQuote: 'Sound exists only when it is going out of existence. Like your argument.',
     },
   };
 
-  const fighterIds = ['foucault', 'chomsky', 'mcluhan', 'mignolo'];
+  const fighterIds = ['foucault', 'chomsky', 'mcluhan', 'ong'];
 
   // Summon-only scholars with bespoke looks. Anyone not listed here (and not a
   // fighter) still works: they get a generic look seeded from their name.

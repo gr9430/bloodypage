@@ -13,7 +13,7 @@ Bloody Rage was the starting reference for "a simple two-player browser fighter.
 ## Goals (first version)
 
 1. Two players on one keyboard, head to head, in a desktop browser.
-2. Four playable fighters, drawn as crude likenesses: **Michel Foucault** and **Noam Chomsky** (the headline matchup), plus **Marshall McLuhan** and **Walter Mignolo** (user-specified second pair).
+2. Four playable fighters, drawn as crude likenesses: **Michel Foucault** and **Noam Chomsky** (the headline matchup), plus **Marshall McLuhan** and **Walter Ong** (user-specified second pair, so McLuhan can face his former student; Ong replaced Mignolo on 2026-10-27).
 3. A Marvel vs. Capcom-style **citation assist**: a button makes your fighter shout a citation, and that scholar pops in, does one attack, and leaves.
 4. A complete match loop: character select → best of 3 rounds with health bars and a round timer → winner screen → rematch / back to select.
 5. Adding a new theorist or a new citation means **editing a data entry**, not writing new engine code. The roster will grow, and the user will supply the real citation lists later.
@@ -38,7 +38,7 @@ Bloody Rage was the starting reference for "a simple two-player browser fighter.
 - **Platform:** runs in a desktop browser, two players sharing one keyboard.
 - **Combat feel:** Marvel vs. Capcom-like rather than bloody.
 - **Citations = summons.** They bring a theorist into the fight as an assist. They are not damage numbers or text attacks.
-- **Starting roster:** Foucault and Chomsky, plus McLuhan and Mignolo, all four playable in the first version.
+- **Starting roster:** Foucault and Chomsky, plus McLuhan and Ong, all four playable in the first version.
 - **Order:** two-player local first, then computer opponent.
 
 ## My calls (the user hasn't weighed in; change freely)
@@ -49,7 +49,7 @@ Bloody Rage was the starting reference for "a simple two-player browser fighter.
 - *Foucault:* bald dome, round glasses, black turtleneck, intense grin.
 - *Chomsky:* swept grey hair, big glasses, sweater, calm expression.
 - *McLuhan:* long face, slicked side-parted hair, 1960s suit and skinny tie.
-- *Mignolo:* white hair, glasses, scarf and blazer.
+- *Ong:* receding grey hair, heavy glasses, black Jesuit suit with a white clerical collar.
 - Summoned assists use the same rig in a different colorway with a recognizable feature (hair, glasses, prop) and a name tag.
 
 **Stage:** One stage, a cartoon version of a 1970s TV debate set: two chairs, a moderator's desk and studio lights. It's a nod to the 1971 Foucault–Chomsky debate.
@@ -71,7 +71,7 @@ Show the controls on the character select screen. Make the key mapping one easy-
 - *Foucault special:* "Panopticon". A watchtower/eye appears over the opponent and briefly stuns them.
 - *Chomsky special:* "Universal Grammar". He throws a syntax-tree projectile.
 - *McLuhan special:* "The Medium Is the Message". A giant 1960s TV set drops on the opponent.
-- *Mignolo special:* "Delinking". A short-range burst that snaps a chain and knocks the opponent far back.
+- *Ong special:* "Secondary Orality". A booming short-range soundwave that knocks the opponent far back.
 
 **Citation mechanic:**
 - Each fighter has an ordered list of 2–3 citable scholars. Pressing Citation summons the next one in the list, which then cycles.
@@ -81,7 +81,7 @@ Show the controls on the character select screen. Make the key mapping one easy-
   - Foucault → Deleuze, Nietzsche, Butler
   - Chomsky → Edward Herman, Howard Zinn, Bakunin
   - McLuhan → Harold Innis, Walter Ong, Wyndham Lewis
-  - Mignolo → Aníbal Quijano, Gloria Anzaldúa, Catherine Walsh
+  - Ong → Eric Havelock, Milman Parry, Marshall McLuhan
 
 **Match rules:** 100 HP each, 60-second rounds, best of 3. If time runs out, more HP remaining wins. Announcer-style big text: "ROUND 1", "DEBATE!", "K.O.", "[NAME] WINS THE ARGUMENT".
 
