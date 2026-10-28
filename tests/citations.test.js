@@ -1,5 +1,5 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'fighter', 'combat', 'effects', 'citations');
+const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations');
 
 const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 const pair = () => [CD.createFighter(CD.FIGHTERS.foucault, 0, false), CD.createFighter(CD.FIGHTERS.chomsky, 1, false)];

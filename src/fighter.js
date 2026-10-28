@@ -3,10 +3,6 @@
   const STAND_H = 160, CROUCH_H = 100, BODY_W = 70;
   const BACKSTEP = 0.6; // fraction of walk speed while backing off (and blocking)
 
-  function idleInput() {
-    return { left: false, right: false, down: false, jump: false, punch: false, kick: false, special: false, cite: false };
-  }
-
   function createFighter(def, player, useAlt) {
     return {
       def,
@@ -139,5 +135,5 @@
     return events;
   }
 
-  Object.assign(CD, { idleInput, createFighter, isActionable, hurtbox, attackHitbox, updateFighter, clampToStage });
+  Object.assign(CD, { createFighter, isActionable, hurtbox, attackHitbox, updateFighter, clampToStage });
 })(globalThis.CD = globalThis.CD || {});

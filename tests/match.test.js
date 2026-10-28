@@ -1,5 +1,5 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'fighter', 'combat', 'effects', 'citations', 'match');
+const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match');
 const { CONFIG } = CD;
 
 const input = (o = {}) => ({ ...CD.idleInput(), ...o });

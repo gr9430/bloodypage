@@ -1,5 +1,5 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'fighter', 'combat', 'effects');
+const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects');
 
 const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 function vs(id, gap = 200) {
