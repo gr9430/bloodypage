@@ -699,8 +699,9 @@
     g.addColorStop(1, '#7a2a1a');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
-    outlinedText(ctx, 'CITATION DEATHMATCH', W / 2, 44, 52, '#ffe14d');
-    plainText(ctx, 'Settle it with your fists. Cite your sources.', W / 2, 84, 18, '#fff3d6');
+    outlinedText(ctx, 'BLOODY PAGE', W / 2, 32, 46, '#ffe14d');
+    outlinedText(ctx, 'SCHOLARLY DEATHMATCH', W / 2, 66, 22, '#ff7f6a');
+    plainText(ctx, 'Settle it with your fists and NOT your sources.', W / 2, 92, 16, '#fff3d6');
   }
 
   const DIFFICULTY_BLURBS = {

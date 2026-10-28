@@ -109,3 +109,12 @@ test('match HUD marks the computer side', () => {
   CD.renderMatch(ctx, m, 1);
   assert.ok(ctx.texts.join('|').includes('CPU · EASY'));
 });
+test('menus show the game title and tagline', () => {
+  const ctx = fakeCtx();
+  CD.renderMenu(ctx, CD.createMenuState(), 1);
+  const all = ctx.texts.join('|');
+  assert.ok(all.includes('BLOODY PAGE'));
+  assert.ok(all.includes('SCHOLARLY DEATHMATCH'));
+  assert.ok(all.includes('Settle it with your fists and NOT your sources.'));
+  assert.ok(!all.includes('CITATION DEATHMATCH'));
+});

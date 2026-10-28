@@ -1,4 +1,4 @@
-# Citation Deathmatch
+# Bloody Page: Scholarly Deathmatch
 
 A two-player browser fighting game in which critical theorists settle their debates with their fists. To call in backup, you cite someone.
 

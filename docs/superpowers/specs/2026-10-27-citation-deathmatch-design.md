@@ -1,6 +1,6 @@
-# Citation Deathmatch — Design
+# Bloody Page: Scholarly Deathmatch — Design
 
-*Working title (builder's call; easy to rename).*
+*Title chosen by the user on 2026-10-28 (formerly the working title "Citation Deathmatch"). Tagline: "Settle it with your fists and NOT your sources."*
 
 ## Intent and why
 

@@ -1,5 +1,5 @@
 {
-  "name": "citation-deathmatch",
+  "name": "bloody-page",
   "private": true,
   "scripts": {
     "test": "node --test tests/"
