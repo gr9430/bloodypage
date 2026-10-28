@@ -46,7 +46,7 @@ test('vs computer: P1 picks own fighter, then the computer\'s', () => {
   for (let i = 0; i < 40 && !start; i++) start = step(st);
   assert.deepStrictEqual(start, { p1: 'mcluhan', p2: 'ong', cpu: 'hard' });
 });
-test('vs computer: kick undoes the last pick', () => {
+test('vs computer: the special key undoes the last pick', () => {
   const st = CD.createMenuState();
   step(st, 'KeyF'); step(st, 'KeyF');
   step(st, 'KeyF'); step(st, 'KeyF');

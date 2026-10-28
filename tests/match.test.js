@@ -26,7 +26,7 @@ test('intro shows ROUND 1 then DEBATE! then fight', () => {
 });
 test('inputs ignored during intro and roundEnd', () => {
   const m = CD.createMatch('foucault', 'chomsky');
-  CD.stepMatch(m, [input({ punch: true, cite: true }), input()]);
+  CD.stepMatch(m, [input({ attack: true, cite: true }), input()]);
   assert.strictEqual(m.fighters[0].attack, null);
   assert.strictEqual(m.assists.length, 0);
   toFight(m);
@@ -34,7 +34,7 @@ test('inputs ignored during intro and roundEnd', () => {
   m.fighters[1].state = 'ko'; m.fighters[1].hp = 0;
   CD.stepMatch(m, idle2());
   assert.strictEqual(m.phase, 'roundEnd');
-  CD.stepMatch(m, [input({ kick: true }), input()]);
+  CD.stepMatch(m, [input({ attack: true }), input()]);
   assert.strictEqual(m.fighters[0].attack, null);
 });
 test('KO ends round and awards win', () => {
@@ -52,7 +52,7 @@ test('double KO is a draw', () => {
   toFight(m);
   const [a, b] = m.fighters;
   a.x = 450; b.x = 520; a.hp = 1; b.hp = 1;
-  const punch = [input({ punch: true }), input({ punch: true })];
+  const punch = [input({ attack: true }), input({ attack: true })];
   CD.stepMatch(m, punch);
   for (let i = 0; i < 10 && m.phase === 'fight'; i++) CD.stepMatch(m, idle2());
   assert.strictEqual(a.hp, 0); assert.strictEqual(b.hp, 0);
@@ -148,7 +148,7 @@ test('mirror match gives P2 altLook', () => {
 test('full scripted match completes', () => {
   const m = CD.createMatch('foucault', 'chomsky');
   const max = 5 * (CONFIG.roundTicks + CONFIG.introTicks + CONFIG.roundEndTicks);
-  untilPhase(m, 'matchEnd', (i) => [input({ right: true, punch: i % 20 === 0 }), input()], max);
+  untilPhase(m, 'matchEnd', (i) => [input({ right: true, attack: i % 20 === 0 }), input()], max);
   assert.strictEqual(m.phase, 'matchEnd');
   assert.strictEqual(m.winner, 0);
 });

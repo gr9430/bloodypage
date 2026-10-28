@@ -5,7 +5,7 @@
   const DASH_TICKS = 22, DASH_MOVING = 16; // the last few dash ticks are recovery
   const DASH_SPEED = 15, BACKDASH_SPEED = 12;
   const DIVE_VY = 12, DIVE_VX = 9;
-  const LOW_MOVES = { lowPunch: true, sweep: true };
+  const LOW_MOVES = { sweep: true };
 
   function createFighter(def, player, useAlt) {
     return {
@@ -60,13 +60,15 @@
     return { x, y: f.y + hb.y, w: hb.w, h: hb.h };
   }
 
-  // Which move a button press becomes depends on stance: in the air, punch
-  // swings upward and down + kick dives; crouching gives the low moves.
+  // One Attack button; the direction held picks the move. In the air it
+  // swings upward, or dives with down. On the ground, down sweeps and
+  // toward the opponent kicks.
   function chooseAttack(f, input) {
     if (input.special) return 'special';
-    if (!f.onGround) return input.punch ? 'airPunch' : input.down ? 'diveKick' : 'kick';
-    if (input.down) return input.punch ? 'lowPunch' : 'sweep';
-    return input.punch ? 'punch' : 'kick';
+    if (!f.onGround) return input.down ? 'diveKick' : 'airPunch';
+    if (input.down) return 'sweep';
+    const toward = f.facing === 1 ? input.right : input.left;
+    return toward ? 'kick' : 'punch';
   }
 
   function clampToStage(f) {
@@ -95,7 +97,7 @@
     f.blocking = f.state === 'blockstun';
     f.crouching = f.state === 'blockstun' && f.blockCrouch;
 
-    if (isActionable(f) && (input.punch || input.kick || input.special)) {
+    if (isActionable(f) && (input.attack || input.special)) {
       const key = chooseAttack(f, input);
       f.attack = { key, frame: 0, hasHit: false };
       f.state = 'attack';

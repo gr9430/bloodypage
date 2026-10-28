@@ -20,8 +20,8 @@
 
   // The one place to change controls. Values are KeyboardEvent.code.
   const KEYMAP = [
-    { left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS', punch: 'KeyF', kick: 'KeyG', special: 'KeyH', cite: 'KeyR' },
-    { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', punch: 'KeyK', kick: 'KeyL', special: 'Semicolon', cite: 'KeyO' },
+    { left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS', attack: 'KeyF', special: 'KeyG', cite: 'KeyH' },
+    { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', attack: 'KeyK', special: 'KeyL', cite: 'Semicolon' },
   ];
 
   const aiLevels = ['easy', 'medium', 'hard'];

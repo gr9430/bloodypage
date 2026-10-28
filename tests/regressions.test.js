@@ -36,7 +36,7 @@ test('effect hit and punch on the same tick both land (double KO is a draw)', ()
   a.x = 450; b.x = 520; a.hp = 5; b.hp = 5;
   const p = CD.FIGHTERS.foucault.moves.punch;
   // B's projectile is placed so it reaches A on the tick A's punch goes active.
-  CD.stepMatch(m, [input({ punch: true }), input()]);
+  CD.stepMatch(m, [input({ attack: true }), input()]);
   for (let i = 1; i < p.startup; i++) CD.stepMatch(m, [input(), input()]);
   const hb = CD.hurtbox(a);
   m.effects.push({ kind: 'projectile', owner: 1, x: hb.x + hb.w + 1, y: hb.y + 20, w: 40, h: 40, vx: -9, vy: 0,

@@ -3,7 +3,7 @@
   // only on the tick the key went down. Any Controller ({ read() }) can drive
   // a fighter, keyboard or (later) AI.
   function idleInput() {
-    return { left: false, right: false, down: false, jump: false, punch: false, kick: false, special: false, cite: false, dashLeft: false, dashRight: false };
+    return { left: false, right: false, down: false, jump: false, attack: false, special: false, cite: false, dashLeft: false, dashRight: false };
   }
 
   const GLOBAL_KEYS = ['Enter', 'Escape', 'KeyM', 'KeyP'];
@@ -56,8 +56,7 @@
           right: held.has(km.right),
           down: held.has(km.down),
           jump: edges.has(km.up),
-          punch: edges.has(km.punch),
-          kick: edges.has(km.kick),
+          attack: edges.has(km.attack),
           special: edges.has(km.special),
           cite: edges.has(km.cite),
           dashLeft: edges.has('dash:' + km.left),

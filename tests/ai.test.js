@@ -2,7 +2,7 @@ const test = require('node:test'); const assert = require('node:assert');
 const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'ai');
 
 const input = (o = {}) => ({ ...CD.idleInput(), ...o });
-const BUTTONS = ['jump', 'punch', 'kick', 'special', 'cite'];
+const BUTTONS = ['jump', 'attack', 'special', 'cite', 'dashLeft', 'dashRight'];
 function toFight(m) { while (m.phase === 'intro') CD.stepMatch(m, [input(), input()]); }
 
 test('three difficulty levels exist', () => {
@@ -56,7 +56,7 @@ function blockRate(level, seed) {
   const ai = CD.createAI(() => m, 1, level, seed);
   let hits = 0, blocks = 0;
   for (let i = 0; i < 1500 && m.phase === 'fight'; i++) {
-    const ev = CD.stepMatch(m, [input({ punch: i % 25 === 0, right: m.fighters[1].x - m.fighters[0].x > 75 }), ai.read()]);
+    const ev = CD.stepMatch(m, [input({ attack: i % 25 === 0, right: m.fighters[1].x - m.fighters[0].x > 75 }), ai.read()]);
     for (const e of ev) if (e.player === 0) { if (e.type === 'hit') hits++; if (e.type === 'block') blocks++; }
   }
   return blocks / Math.max(1, hits + blocks);
@@ -99,7 +99,7 @@ function lowBlockRate(level, seed) {
   let hits = 0, blocks = 0;
   for (let i = 0; i < 1500 && m.phase === 'fight'; i++) {
     const sweep = i % 30 === 0;
-    const ev = CD.stepMatch(m, [input({ down: sweep, kick: sweep, right: !sweep && m.fighters[1].x - m.fighters[0].x > 75 }), ai.read()]);
+    const ev = CD.stepMatch(m, [input({ down: sweep, attack: sweep, right: !sweep && m.fighters[1].x - m.fighters[0].x > 75 }), ai.read()]);
     for (const e of ev) if (e.player === 0) { if (e.type === 'hit') hits++; if (e.type === 'block') blocks++; }
   }
   return blocks / Math.max(1, hits + blocks);
@@ -122,7 +122,7 @@ test('medium and hard ai use the new moves', () => {
       if (f.attack) used.add(f.attack.key);
       if (f.state === 'dash') used.add('dash');
     }
-    for (const k of ['sweep', 'lowPunch', 'dash']) assert.ok(used.has(k), `${level} never used ${k}`);
+    for (const k of ['sweep', 'kick', 'dash']) assert.ok(used.has(k), `${level} never used ${k}`);
     assert.ok(used.has('airPunch') || used.has('diveKick'), `${level} never attacked in the air`);
   }
 });

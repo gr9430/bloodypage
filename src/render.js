@@ -186,12 +186,6 @@
         j.backHand = [-30, -150];
         j.frontHand = [30, -150];
         break;
-      case 'lowPunch':
-        j.hip = -28; j.shoulder = -66;
-        j.backFoot = [-24, 0]; j.frontFoot = [24, 0];
-        j.frontHand = [76, -50]; j.backHand = [-6, -40];
-        j.face = 'yell';
-        break;
       case 'sweep':
         j.hip = -24; j.shoulder = -60; j.lean = -6;
         j.backFoot = [-20, 0]; j.frontFoot = [96, -8];
@@ -776,25 +770,25 @@
     drawFighterRig(ctx, CD.FIGHTERS.foucault.look, 110, H - 40, 1, 'idle', 0.9);
     drawFighterRig(ctx, CD.FIGHTERS.chomsky.look, W - 110, H - 40, -1, 'idle', 0.9);
     const km = CD.KEYMAP[0];
-    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.punch)} or Enter: confirm` + (isMode ? '' : '   ·   Esc: back') + '   ·   M: mute', W / 2, H - 16, 14, '#d8c8ff');
+    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.attack)} or Enter: confirm` + (isMode ? '' : '   ·   Esc: back') + '   ·   M: mute', W / 2, H - 16, 14, '#d8c8ff');
   }
 
   function controlsColumn(ctx, km, x, ty, title, color) {
     outlinedText(ctx, title, x, ty, 22, color, { align: 'left' });
     const [up, left, down, right] = [km.up, km.left, km.down, km.right].map(keyLabel);
-    const p = keyLabel(km.punch), k = keyLabel(km.kick);
+    const atk = keyLabel(km.attack);
+    const fwd = title === 'PLAYER 2' ? left : right;
     const rows = [
       ['Move / jump', [up, left, down, right].join(' ')],
-      ['Punch / Kick', `${p} / ${k}`],
-      ['Low (crouch)', `${down} + ${p} / ${k}`],
-      ['In air', `${p} swings up · ${down} + ${k} dive`],
+      ['Attack', `${atk} punch · ${fwd} + ${atk} kick · ${down} + ${atk} sweep`],
+      ['In air', `${atk} swings up · ${down} + ${atk} dive`],
+      ['Special · Cite', `${keyLabel(km.special)} (full bar) · ${keyLabel(km.cite)}`],
       ['Dash', `double-tap ${left} / ${right}`],
-      ['Special · Cite', `${keyLabel(km.special)} · ${keyLabel(km.cite)}`],
-      ['Block', `hold away (+ ${down} vs lows)`],
+      ['Block', `hold away (+ ${down} vs sweeps)`],
     ];
     rows.forEach(([label, keys], r) => {
       plainText(ctx, label, x, ty + 22 + r * 16, 13, '#fff3d6', 'left');
-      plainText(ctx, keys, x + 120, ty + 22 + r * 16, 13, '#fff', 'left', LOUD);
+      plainText(ctx, keys, x + 100, ty + 22 + r * 16, 13, '#fff', 'left', LOUD);
     });
   }
 
@@ -833,10 +827,10 @@
       plainText(ctx, DIFFICULTY_BLURBS[cpu], x, ty + 30, 15, '#fff3d6', 'left');
       plainText(ctx, sel.locked[0] ? `Now pick the computer's fighter.` : 'Pick your fighter first,', x, ty + 56, 15, '#fff', 'left');
       plainText(ctx, sel.locked[0] ? '' : `then the computer's.`, x, ty + 75, 15, '#fff', 'left');
-      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}   ·   ${keyLabel(p1k.kick)}: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
+      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.attack)}   ·   ${keyLabel(p1k.special)}: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
     } else {
       controlsColumn(ctx, p2k, W / 2 + 70, ty, 'PLAYER 2', '#4ab0ff');
-      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}  ·  ${keyLabel(p2k.left)}/${keyLabel(p2k.right)} + ${keyLabel(p2k.punch)}   ·   Kick: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
+      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.attack)}  ·  ${keyLabel(p2k.left)}/${keyLabel(p2k.right)} + ${keyLabel(p2k.attack)}   ·   Special: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
     }
   }
 
@@ -876,7 +870,7 @@
       outlinedText(ctx, label, W / 2, y, on ? 30 : 24, on ? '#ffe14d' : '#d8c8ff');
     });
     const km = CD.KEYMAP[0];
-    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.punch)} or Enter: confirm   ·   Esc / P: resume`, W / 2, H - 16, 14, '#d8c8ff');
+    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.attack)} or Enter: confirm   ·   Esc / P: resume`, W / 2, H - 16, 14, '#d8c8ff');
   }
 
   function drawMuteIcon(ctx, muted) {

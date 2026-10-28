@@ -56,6 +56,6 @@ test('config spec values', () => {
   assert.strictEqual(CD.CONFIG.roundTicks, 3600);
   assert.strictEqual(CD.CONFIG.roundsToWin, 2);
   assert.strictEqual(CD.CONFIG.citeCooldownTicks, 480);
-  assert.strictEqual(CD.KEYMAP[0].cite, 'KeyR');
-  assert.strictEqual(CD.KEYMAP[1].special, 'Semicolon');
+  assert.deepStrictEqual(CD.KEYMAP[0], { left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS', attack: 'KeyF', special: 'KeyG', cite: 'KeyH' });
+  assert.deepStrictEqual(CD.KEYMAP[1], { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', attack: 'KeyK', special: 'KeyL', cite: 'Semicolon' });
 });

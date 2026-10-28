@@ -29,7 +29,7 @@
   function stepList(st, pressed, key, count) {
     if (anyOf(pressed, 'up')) st[key] = (st[key] + count - 1) % count;
     if (anyOf(pressed, 'down')) st[key] = (st[key] + 1) % count;
-    return anyOf(pressed, 'punch') || pressed('Enter');
+    return anyOf(pressed, 'attack') || pressed('Enter');
   }
 
   function stepSelect(st, pressed) {
@@ -39,13 +39,13 @@
       // One human picks both fighters: their own, then the computer's.
       const km = KEYMAP[0];
       const active = sel.locked[0] ? 1 : 0;
-      if (pressed(km.kick)) {
+      if (pressed(km.special)) {
         if (sel.locked[1]) sel.locked[1] = false;
         else sel.locked[0] = false;
       } else if (!sel.locked[active]) {
         if (pressed(km.left)) sel.cursor[active] = (sel.cursor[active] + n - 1) % n;
         if (pressed(km.right)) sel.cursor[active] = (sel.cursor[active] + 1) % n;
-        if (pressed(km.punch)) sel.locked[active] = true;
+        if (pressed(km.attack)) sel.locked[active] = true;
       }
     } else {
       for (let i = 0; i < 2; i++) {
@@ -53,8 +53,8 @@
         if (!sel.locked[i]) {
           if (pressed(km.left)) sel.cursor[i] = (sel.cursor[i] + n - 1) % n;
           if (pressed(km.right)) sel.cursor[i] = (sel.cursor[i] + 1) % n;
-          if (pressed(km.punch)) sel.locked[i] = true;
-        } else if (pressed(km.kick)) {
+          if (pressed(km.attack)) sel.locked[i] = true;
+        } else if (pressed(km.special)) {
           sel.locked[i] = false;
         }
       }

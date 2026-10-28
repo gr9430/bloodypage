@@ -2,7 +2,7 @@ const test = require('node:test'); const assert = require('node:assert');
 const { load, fakeCtx } = require('./helpers');
 const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'menu', 'render');
 
-const POSES = ['idle', 'walk', 'jump', 'crouch', 'punch', 'kick', 'special', 'block', 'hurt', 'ko', 'win', 'lowPunch', 'sweep', 'airPunch', 'diveKick', 'crouchBlock', 'dash', 'backdash'];
+const POSES = ['idle', 'walk', 'jump', 'crouch', 'punch', 'kick', 'special', 'block', 'hurt', 'ko', 'win', 'sweep', 'airPunch', 'diveKick', 'crouchBlock', 'dash', 'backdash'];
 const KINDS = ['stunZone', 'projectile', 'drop', 'burst', 'rush'];
 
 function busyMatch(p1, p2) {
@@ -67,7 +67,7 @@ test('renderSelect output includes every fighter and key label', () => {
   const ctx = fakeCtx();
   CD.renderSelect(ctx, { cursor: [0, 1], locked: [true, false] }, 3);
   const all = ctx.texts.join('|');
-  for (const l of ['F', ';', '←', 'R', 'O', 'W A S D']) assert.ok(all.includes(l), l);
+  for (const l of ['F', 'G', 'H', 'K', 'L', ';', '←', 'W A S D']) assert.ok(all.includes(l), l);
   for (const id of CD.fighterIds) assert.ok(all.toUpperCase().includes(CD.FIGHTERS[id].name.toUpperCase()));
 });
 test('renderWinner shows banner and win quote', () => {
@@ -122,7 +122,7 @@ test('menus show the game title and tagline', () => {
 test('poseFor covers the new moves', () => {
   const f = CD.createFighter(CD.FIGHTERS.foucault, 0, false);
   f.state = 'attack';
-  for (const k of ['lowPunch', 'sweep', 'airPunch', 'diveKick']) { f.attack = { key: k, frame: 1 }; assert.strictEqual(CD.poseFor(f), k); }
+  for (const k of ['sweep', 'airPunch', 'diveKick']) { f.attack = { key: k, frame: 1 }; assert.strictEqual(CD.poseFor(f), k); }
   f.attack = null; f.state = 'crouch'; f.crouching = true; f.blocking = true;
   assert.strictEqual(CD.poseFor(f), 'crouchBlock');
   f.blocking = false; f.state = 'dash'; f.dashDir = 1; f.facing = 1;
@@ -143,5 +143,5 @@ test('controls list dash, low and air attacks, and pause', () => {
   const ctx = fakeCtx();
   CD.renderSelect(ctx, { cursor: [0, 1], locked: [false, false] }, 1);
   const all = ctx.texts.join('|');
-  for (const t of ['Dash', 'double-tap', 'S + F / G', 'In air', 'Esc / P']) assert.ok(all.includes(t), t);
+  for (const t of ['Attack', 'D + F', 'S + F', 'In air', 'Dash', 'double-tap', 'Esc / P']) assert.ok(all.includes(t), t);
 });

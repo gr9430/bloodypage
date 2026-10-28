@@ -11,14 +11,14 @@ const up = (t, code) => t.dispatch('keyup', { code });
 
 test('idleInput is all false', () => {
   assert.ok(Object.values(CD.idleInput()).every(v => v === false));
-  assert.deepStrictEqual(Object.keys(CD.idleInput()).sort(), ['cite', 'dashLeft', 'dashRight', 'down', 'jump', 'kick', 'left', 'punch', 'right', 'special']);
+  assert.deepStrictEqual(Object.keys(CD.idleInput()).sort(), ['attack', 'cite', 'dashLeft', 'dashRight', 'down', 'jump', 'left', 'right', 'special']);
 });
 test('P1 and P2 keys held simultaneously both register', () => {
   const { t, k } = kb();
   down(t, 'KeyA'); down(t, 'KeyF'); down(t, 'ArrowRight'); down(t, 'KeyL');
   const p1 = k.controllers[0].read(), p2 = k.controllers[1].read();
-  assert.strictEqual(p1.left, true); assert.strictEqual(p1.punch, true); assert.strictEqual(p1.right, false);
-  assert.strictEqual(p2.right, true); assert.strictEqual(p2.kick, true); assert.strictEqual(p2.punch, false);
+  assert.strictEqual(p1.left, true); assert.strictEqual(p1.attack, true); assert.strictEqual(p1.right, false);
+  assert.strictEqual(p2.right, true); assert.strictEqual(p2.special, true); assert.strictEqual(p2.attack, false);
 });
 test('up key is a jump edge', () => {
   const { t, k } = kb();
@@ -27,15 +27,15 @@ test('up key is a jump edge', () => {
   k.endTick();
   assert.strictEqual(k.controllers[0].read().jump, false);
 });
-test('holding punch fires once', () => {
+test('holding attack fires once', () => {
   const { t, k } = kb();
   down(t, 'KeyK');
-  assert.strictEqual(k.controllers[1].read().punch, true);
+  assert.strictEqual(k.controllers[1].read().attack, true);
   k.endTick();
   down(t, 'KeyK', { repeat: true });
-  assert.strictEqual(k.controllers[1].read().punch, false);
+  assert.strictEqual(k.controllers[1].read().attack, false);
   up(t, 'KeyK'); down(t, 'KeyK');
-  assert.strictEqual(k.controllers[1].read().punch, true);
+  assert.strictEqual(k.controllers[1].read().attack, true);
 });
 test('held directions persist across ticks until keyup', () => {
   const { t, k } = kb();
