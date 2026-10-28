@@ -1,0 +1,97 @@
+# Citation Deathmatch — Design
+
+*Working title (builder's call; easy to rename).*
+
+## Intent and why
+
+This is a browser fighting game born from an in-joke in a gender in technology course. Academic arguments get settled by citation ("Well, to Tuck and Yang, I would say see Walter Mignolo"), so the game makes that literal. Critical theorists fight it out, and citing someone **summons them into the fight**.
+
+The tone is *Celebrity Deathmatch* (crude, cartoonish likenesses of real thinkers in a mock-sports spectacle) crossed with *Marvel vs. Capcom* (fast, flashy, with assist characters called in mid-fight). The audience is people from the course who get the references, so deep cuts are welcome.
+
+Bloody Rage was the starting reference for "a simple two-player browser fighter." It is **not** a template. This is an original game, and no assets, characters or move sets come from it. The user's Bloody Rage files are compiled `.swf` and aren't used.
+
+## Goals (first version)
+
+1. Two players on one keyboard, head to head, in a desktop browser.
+2. Two playable fighters: **Michel Foucault** and **Noam Chomsky**, drawn as crude likenesses.
+3. A Marvel vs. Capcom-style **citation assist**: a button makes your fighter shout a citation, and that scholar pops in, does one attack, and leaves.
+4. A complete match loop: character select → best of 3 rounds with health bars and a round timer → winner screen → rematch / back to select.
+5. Adding a new theorist or a new citation means **editing a data entry**, not writing new engine code. The roster will grow, and the user will supply the real citation lists later.
+
+## Non-goals (for now)
+
+- Computer opponent. This is the planned **next** step. Structure input so an AI controller can later drive a fighter the same way a keyboard does.
+- Online play, gamepads, mobile/touch.
+- Super meters, combo systems, multi-character tag teams, story mode.
+- Final citation lists. Use placeholders (below).
+- Sprite/image assets. Art is drawn in code.
+
+## Anti-goals (would make it a failure even if it works)
+
+- **Gore.** No blood or dismemberment. Hits read as cartoon bonks: hit sparks, knockback, squash-and-stretch, comic "POW" text.
+- Copying Bloody Rage (or any existing game's) characters, art, or moves.
+- Hardcoding characters into engine logic so that adding a theorist means touching game code.
+- Needing an install, build step, or server to play.
+
+## Decided
+
+- **Platform:** runs in a desktop browser, two players sharing one keyboard.
+- **Combat feel:** Marvel vs. Capcom-like rather than bloody.
+- **Citations = summons.** They bring a theorist into the fight as an assist. They are not damage numbers or text attacks.
+- **Starting roster:** Foucault and Chomsky.
+- **Order:** two-player local first, then computer opponent.
+
+## My calls (the user hasn't weighed in; change freely)
+
+**Tech:** Plain HTML + JavaScript + `<canvas>`, no framework, no build. It must work by double-clicking `index.html` (i.e., over `file://`), so use classic `<script>` tags rather than ES modules. Suggested split: `index.html`, `game.js` (engine), `characters.js` (roster data).
+
+**Art style:** Drawn with canvas shapes. Big heads, small bodies, wobbly crude outlines, a deliberately "made in MS Paint" look.
+- *Foucault:* bald dome, round glasses, black turtleneck, intense grin.
+- *Chomsky:* swept grey hair, big glasses, sweater, calm expression.
+- Summoned assists use the same rig in a different colorway with a recognizable feature (hair, glasses, prop) and a name tag.
+
+**Stage:** One stage, a cartoon version of a 1970s TV debate set: two chairs, a moderator's desk and studio lights. It's a nod to the 1971 Foucault–Chomsky debate.
+
+**Controls:**
+
+| Action | Player 1 | Player 2 |
+|---|---|---|
+| Move / jump / crouch | W A S D | Arrow keys |
+| Punch | F | K |
+| Kick | G | L |
+| Special | H | ; |
+| Citation (summon) | R | O |
+| Block | hold away from opponent | hold away from opponent |
+
+Show the controls on the character select screen. Make the key mapping one easy-to-edit table, and test for keyboard ghosting on a typical laptop.
+
+**Moves per fighter:** walk, jump, crouch, block, light punch, kick, one signature special, and a citation call.
+- *Foucault special:* "Panopticon". A watchtower/eye appears over the opponent and briefly stuns them.
+- *Chomsky special:* "Universal Grammar". He throws a syntax-tree projectile.
+
+**Citation mechanic:**
+- Each fighter has an ordered list of 2–3 citable scholars. Pressing Citation summons the next one in the list, which then cycles.
+- The fighter shows a speech bubble ("See Deleuze!") and the summoned scholar dashes in from off-screen, does one attack (a hit, projectile, or effect defined per scholar in data), and exits.
+- Citations are on a **cooldown** (~8 seconds, tunable). The HUD shows readiness and the next name up.
+- Placeholder citation lists:
+  - Foucault → Deleuze, Nietzsche, Butler
+  - Chomsky → Edward Herman, Howard Zinn, Bakunin
+
+**Match rules:** 100 HP each, 60-second rounds, best of 3. If time runs out, more HP remaining wins. Announcer-style big text: "ROUND 1", "DEBATE!", "K.O.", "[NAME] WINS THE ARGUMENT".
+
+**Edge cases:**
+- If time runs out with equal HP, the round is a draw and neither player scores. If the score is still tied after round 3, play sudden-death rounds.
+- Both players may pick the same fighter. Player 2 then gets an alternate colorway.
+- Summoned scholars can't be hit or interrupted, but their attacks can be blocked.
+- A citation can be **just a name**. Any scholar without their own entry gets a generic look (name tag plus random hair and glasses) and a default rush attack. This lets the user paste in real citation lists later with no extra work.
+
+**Sound:** Simple synthesized hit/whoosh blips via Web Audio. No audio files. A mute toggle.
+
+**Roster data shape:** each character entry carries a name, look parameters (colors, head shape, features), move stats (damage, speed, hitbox, startup/recovery), the special's definition, its citation list, and a win quote. Summonable scholars are entries too (look and assist attack), so anyone can be both a fighter and a summon.
+
+## Left to the builder
+
+- Exact frame data, hitbox sizes, physics constants and balance. Aim for snappy, readable and fun.
+- Internal architecture (state machine, entity structure, game loop), as long as an AI controller can drive a fighter later through the same input interface.
+- Testing approach. Pure logic (damage, round/match state, cooldowns, collision) should be testable without a browser.
+- Visual polish details within the crude-likeness style.
