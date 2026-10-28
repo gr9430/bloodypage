@@ -90,3 +90,39 @@ test('ai uses specials and citations on medium and hard', () => {
     assert.ok(types.has('cite'), level + ' cite');
   }
 });
+
+// A bully that sweeps (low) every 30 ticks.
+function lowBlockRate(level, seed) {
+  const m = CD.createMatch('foucault', 'chomsky'); toFight(m);
+  m.fighters[0].x = 420; m.fighters[1].x = 490;
+  const ai = CD.createAI(() => m, 1, level, seed);
+  let hits = 0, blocks = 0;
+  for (let i = 0; i < 1500 && m.phase === 'fight'; i++) {
+    const sweep = i % 30 === 0;
+    const ev = CD.stepMatch(m, [input({ down: sweep, kick: sweep, right: !sweep && m.fighters[1].x - m.fighters[0].x > 75 }), ai.read()]);
+    for (const e of ev) if (e.player === 0) { if (e.type === 'hit') hits++; if (e.type === 'block') blocks++; }
+  }
+  return blocks / Math.max(1, hits + blocks);
+}
+test('hard ai crouch-blocks sweeps; easy mostly does not', () => {
+  const avg = (level) => [1, 2, 3, 4, 5].reduce((s, seed) => s + lowBlockRate(level, seed), 0) / 5;
+  const easy = avg('easy'), hard = avg('hard');
+  assert.ok(hard > 0.5, `hard ${hard}`);
+  assert.ok(easy < 0.3, `easy ${easy}`);
+});
+test('medium and hard ai use the new moves', () => {
+  for (const level of ['medium', 'hard']) {
+    const m = CD.createMatch('mcluhan', 'ong'); toFight(m);
+    const p0 = CD.createAI(() => m, 0, 'medium', 77);
+    const ai = CD.createAI(() => m, 1, level, 11);
+    const used = new Set();
+    for (let i = 0; i < 6000 && m.phase !== 'matchEnd'; i++) {
+      CD.stepMatch(m, [p0.read(), ai.read()]);
+      const f = m.fighters[1];
+      if (f.attack) used.add(f.attack.key);
+      if (f.state === 'dash') used.add('dash');
+    }
+    for (const k of ['sweep', 'lowPunch', 'dash']) assert.ok(used.has(k), `${level} never used ${k}`);
+    assert.ok(used.has('airPunch') || used.has('diveKick'), `${level} never attacked in the air`);
+  }
+});

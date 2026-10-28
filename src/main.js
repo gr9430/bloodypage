@@ -14,6 +14,7 @@
     menu: CD.createMenuState(),
     match: null,
     ai: null,
+    pause: null,
     endTimer: 0,
     tick: 0,
   };
@@ -25,7 +26,14 @@
     game.match.cpu = cpu;
     game.ai = cpu ? CD.createAI(() => game.match, 1, cpu, Date.now()) : null;
     game.endTimer = 0;
+    game.pause = null;
     game.screen = 'fight';
+  }
+
+  function toMenu(menuState) {
+    game.menu = menuState;
+    game.pause = null;
+    game.screen = 'menu';
   }
 
   function updateMenu() {
@@ -33,10 +41,18 @@
     if (start) startMatch(start.p1, start.p2, start.cpu);
   }
 
+  function updatePause() {
+    const m = game.match;
+    const action = CD.stepPause(game.pause, keyboard.pressedGlobal);
+    if (action === 'resume') game.pause = null;
+    else if (action === 'restart') startMatch(m.fighterIds[0], m.fighterIds[1], m.cpu);
+    else if (action === 'select') { CD.backToSelect(game.menu); toMenu(game.menu); }
+    else if (action === 'main') toMenu(CD.createMenuState());
+  }
+
   function updateFight() {
-    if (keyboard.pressedGlobal('Escape')) {
-      CD.backToSelect(game.menu);
-      game.screen = 'menu';
+    if (keyboard.pressedGlobal('Escape') || keyboard.pressedGlobal('KeyP')) {
+      game.pause = CD.createPauseState();
       return;
     }
     const p1 = keyboard.controllers[0].read();
@@ -53,8 +69,7 @@
     if (keyboard.pressedGlobal('Enter')) {
       startMatch(m.fighterIds[0], m.fighterIds[1], m.cpu);
     } else if (keyboard.pressedGlobal('Escape')) {
-      game.menu = CD.createMenuState();
-      game.screen = 'menu';
+      toMenu(CD.createMenuState());
     }
   }
 
@@ -62,7 +77,7 @@
     game.tick++;
     if (keyboard.pressedGlobal('KeyM')) audio.toggleMute();
     if (game.screen === 'menu') updateMenu();
-    else if (game.screen === 'fight') updateFight();
+    else if (game.screen === 'fight') game.pause ? updatePause() : updateFight();
     else updateWinner();
     keyboard.endTick();
   }
@@ -71,7 +86,10 @@
     if (game.screen === 'menu') {
       if (game.menu.screen === 'select') CD.renderSelect(ctx, game.menu.sel, game.tick, game.menu.cpu);
       else CD.renderMenu(ctx, game.menu, game.tick);
-    } else if (game.screen === 'fight') CD.renderMatch(ctx, game.match, game.tick);
+    } else if (game.screen === 'fight') {
+      if (game.pause) CD.renderPause(ctx, game.match, game.pause, game.tick);
+      else CD.renderMatch(ctx, game.match, game.tick);
+    }
     else CD.renderWinner(ctx, game.match, game.tick);
     CD.drawMuteIcon(ctx, audio.muted);
   }

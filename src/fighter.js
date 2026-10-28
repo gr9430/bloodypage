@@ -2,6 +2,10 @@
   const { CONFIG } = CD;
   const STAND_H = 160, CROUCH_H = 100, BODY_W = 70;
   const BACKSTEP = 0.6; // fraction of walk speed while backing off (and blocking)
+  const DASH_TICKS = 22, DASH_MOVING = 16; // the last few dash ticks are recovery
+  const DASH_SPEED = 15, BACKDASH_SPEED = 12;
+  const DIVE_VY = 12, DIVE_VX = 9;
+  const LOW_MOVES = { lowPunch: true, sweep: true };
 
   function createFighter(def, player, useAlt) {
     return {
@@ -20,8 +24,10 @@
       kb: 0,
       stunImmune: 0,
       blocking: false,
+      blockCrouch: false,
       crouching: false,
       onGround: true,
+      dashDir: 0,
     };
   }
 
@@ -54,6 +60,15 @@
     return { x, y: f.y + hb.y, w: hb.w, h: hb.h };
   }
 
+  // Which move a button press becomes depends on stance: in the air, punch
+  // swings upward and down + kick dives; crouching gives the low moves.
+  function chooseAttack(f, input) {
+    if (input.special) return 'special';
+    if (!f.onGround) return input.punch ? 'airPunch' : input.down ? 'diveKick' : 'kick';
+    if (input.down) return input.punch ? 'lowPunch' : 'sweep';
+    return input.punch ? 'punch' : 'kick';
+  }
+
   function clampToStage(f) {
     f.x = Math.max(CONFIG.stageLeft, Math.min(CONFIG.stageRight, f.x));
   }
@@ -68,17 +83,31 @@
       if (f.stateTimer <= 0) f.state = f.onGround ? 'idle' : 'jump';
     }
 
-    if (f.onGround && f.state !== 'ko') f.facing = opponent.x >= f.x ? 1 : -1;
+    if (f.state === 'dash') {
+      f.stateTimer--;
+      const speed = f.dashDir === f.facing ? DASH_SPEED : BACKDASH_SPEED;
+      f.vx = f.stateTimer >= DASH_TICKS - DASH_MOVING ? f.dashDir * speed : 0;
+      if (f.stateTimer <= 0) { f.state = 'idle'; f.vx = 0; }
+    }
+
+    if (f.onGround && f.state !== 'ko' && f.state !== 'dash') f.facing = opponent.x >= f.x ? 1 : -1;
 
     f.blocking = f.state === 'blockstun';
-    f.crouching = false;
+    f.crouching = f.state === 'blockstun' && f.blockCrouch;
 
     if (isActionable(f) && (input.punch || input.kick || input.special)) {
-      const key = input.punch ? 'punch' : input.kick ? 'kick' : 'special';
+      const key = chooseAttack(f, input);
       f.attack = { key, frame: 0, hasHit: false };
       f.state = 'attack';
       events.push({ type: 'whoosh', player: f.player });
+    } else if (isActionable(f) && f.onGround && (input.dashLeft || input.dashRight)) {
+      f.dashDir = input.dashRight ? 1 : -1;
+      f.state = 'dash';
+      f.stateTimer = DASH_TICKS;
+      f.vx = f.dashDir * (f.dashDir === f.facing ? DASH_SPEED : BACKDASH_SPEED);
+      events.push({ type: 'whoosh', player: f.player });
     }
+    if (f.attack && LOW_MOVES[f.attack.key]) f.crouching = true;
 
     if (f.onGround && isActionable(f)) {
       const away = f.facing === 1 ? input.left : input.right;
@@ -90,6 +119,7 @@
         f.state = 'jump';
       } else if (input.down) {
         f.crouching = true;
+        f.blocking = away;
         f.vx = 0;
         f.state = 'crouch';
       } else if (away) {
@@ -103,12 +133,16 @@
         f.vx = 0;
         f.state = 'idle';
       }
-    } else if (f.onGround) {
+    } else if (f.onGround && f.state !== 'dash') {
       f.vx = 0;
     }
 
     if (f.attack) {
       f.attack.frame++;
+      if (f.attack.key === 'diveKick' && f.attack.frame >= f.def.moves.diveKick.startup && !f.onGround) {
+        f.vy = DIVE_VY;
+        f.vx = f.facing * DIVE_VX;
+      }
       if (f.attack.key === 'special' && f.attack.frame === f.def.special.startup) {
         events.push({ type: 'special', player: f.player });
       }
@@ -122,7 +156,8 @@
     f.kb *= 0.8;
     if (Math.abs(f.kb) < 0.3) f.kb = 0;
     if (!f.onGround) {
-      f.vy += CONFIG.gravity;
+      const diving = f.attack && f.attack.key === 'diveKick' && f.attack.frame >= f.def.moves.diveKick.startup;
+      if (!diving) f.vy += CONFIG.gravity;
       f.y += f.vy;
       if (f.y >= CONFIG.floorY) {
         f.y = CONFIG.floorY;
@@ -130,7 +165,11 @@
         f.vx = 0;
         f.onGround = true;
         if (f.state === 'jump') f.state = 'idle';
-        if (f.state === 'attack') f.vx = 0;
+        // A dive kick goes straight into its recovery when it lands.
+        if (f.attack && f.attack.key === 'diveKick') {
+          const m = f.def.moves.diveKick;
+          f.attack.frame = Math.max(f.attack.frame, m.startup + m.active);
+        }
       }
     }
     clampToStage(f);

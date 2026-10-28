@@ -2,7 +2,7 @@ const test = require('node:test'); const assert = require('node:assert');
 const { load, fakeCtx } = require('./helpers');
 const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'menu', 'render');
 
-const POSES = ['idle', 'walk', 'jump', 'crouch', 'punch', 'kick', 'special', 'block', 'hurt', 'ko', 'win'];
+const POSES = ['idle', 'walk', 'jump', 'crouch', 'punch', 'kick', 'special', 'block', 'hurt', 'ko', 'win', 'lowPunch', 'sweep', 'airPunch', 'diveKick', 'crouchBlock', 'dash', 'backdash'];
 const KINDS = ['stunZone', 'projectile', 'drop', 'burst', 'rush'];
 
 function busyMatch(p1, p2) {
@@ -117,4 +117,31 @@ test('menus show the game title and tagline', () => {
   assert.ok(all.includes('SCHOLARLY DEATHMATCH'));
   assert.ok(all.includes('Settle it with your fists and NOT your sources.'));
   assert.ok(!all.includes('CITATION DEATHMATCH'));
+});
+
+test('poseFor covers the new moves', () => {
+  const f = CD.createFighter(CD.FIGHTERS.foucault, 0, false);
+  f.state = 'attack';
+  for (const k of ['lowPunch', 'sweep', 'airPunch', 'diveKick']) { f.attack = { key: k, frame: 1 }; assert.strictEqual(CD.poseFor(f), k); }
+  f.attack = null; f.state = 'crouch'; f.crouching = true; f.blocking = true;
+  assert.strictEqual(CD.poseFor(f), 'crouchBlock');
+  f.blocking = false; f.state = 'dash'; f.dashDir = 1; f.facing = 1;
+  assert.strictEqual(CD.poseFor(f), 'dash');
+  f.dashDir = -1;
+  assert.strictEqual(CD.poseFor(f), 'backdash');
+});
+test('renderPause draws PAUSED and every option over the match', () => {
+  const m = CD.createMatch('foucault', 'chomsky');
+  const ctx = fakeCtx();
+  CD.renderPause(ctx, m, { cursor: 1 }, 1);
+  const all = ctx.texts.join('|');
+  assert.ok(all.includes('PAUSED'));
+  for (const o of CD.PAUSE_OPTIONS) assert.ok(all.includes(o), o);
+  assert.ok(all.includes('MICHEL FOUCAULT'), 'match drawn underneath');
+});
+test('controls list dash, low and air attacks, and pause', () => {
+  const ctx = fakeCtx();
+  CD.renderSelect(ctx, { cursor: [0, 1], locked: [false, false] }, 1);
+  const all = ctx.texts.join('|');
+  for (const t of ['Dash', 'double-tap', 'S + F / G', 'In air', 'Esc / P']) assert.ok(all.includes(t), t);
 });

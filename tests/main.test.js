@@ -38,3 +38,23 @@ test('play a full match against the computer from the main menu', () => {
   tap('Escape');
   assert.ok(screenText().includes('1 PLAYER VS COMPUTER'));
 });
+
+test('pause freezes the fight and its menu works', () => {
+  // from the main menu: 2 players, Foucault vs Chomsky
+  tap('KeyS'); tap('KeyF');
+  tap('KeyF'); tap('KeyK');
+  frames(40 + 200);                  // through autostart and the intro
+  const timerNow = () => ctx.texts.find((t) => /^\d+$/.test(t));
+  const before = timerNow();
+  tap('KeyP');
+  assert.ok(screenText().includes('PAUSED'));
+  frames(300);
+  assert.ok(screenText().includes('PAUSED'));
+  assert.strictEqual(timerNow(), before, 'round timer frozen');
+  tap('Escape');                     // resume
+  assert.ok(!screenText().includes('PAUSED'));
+  frames(120);
+  assert.notStrictEqual(timerNow(), before, 'round timer runs again');
+  tap('Escape'); tap('KeyW'); tap('KeyF'); // pause -> MAIN MENU
+  assert.ok(screenText().includes('1 PLAYER VS COMPUTER'));
+});

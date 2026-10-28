@@ -37,7 +37,10 @@
     if (defender.state === 'ko') return 'ignored';
     const away = Math.sign(defender.x - hit.fromX) || -defender.facing;
     const fromFront = (hit.fromX - defender.x) * defender.facing >= 0;
-    if (defender.blocking && fromFront) {
+    const level = hit.level || 'mid';
+    const rightStance = level === 'mid' || (level === 'low') === defender.crouching;
+    if (defender.blocking && fromFront && rightStance) {
+      defender.blockCrouch = defender.crouching;
       defender.state = 'blockstun';
       defender.stateTimer = Math.ceil(hit.hitstun / 2);
       defender.kb = away * hit.knockback / 2;
@@ -71,7 +74,7 @@
   function applyPending(p) {
     if (p.attacker.attack) p.attacker.attack.hasHit = true;
     const { move, hb } = p;
-    const result = applyHit(p.defender, { damage: move.damage, knockback: move.knockback, hitstun: move.hitstun, fromX: p.attacker.x });
+    const result = applyHit(p.defender, { damage: move.damage, knockback: move.knockback, hitstun: move.hitstun, level: move.level, fromX: p.attacker.x });
     if (result === 'ignored') return [];
     return [{ type: result, player: p.attacker.player, x: hb.x + hb.w / 2, y: hb.y + hb.h / 2 }];
   }

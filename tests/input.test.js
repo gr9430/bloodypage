@@ -11,7 +11,7 @@ const up = (t, code) => t.dispatch('keyup', { code });
 
 test('idleInput is all false', () => {
   assert.ok(Object.values(CD.idleInput()).every(v => v === false));
-  assert.deepStrictEqual(Object.keys(CD.idleInput()).sort(), ['cite', 'down', 'jump', 'kick', 'left', 'punch', 'right', 'special']);
+  assert.deepStrictEqual(Object.keys(CD.idleInput()).sort(), ['cite', 'dashLeft', 'dashRight', 'down', 'jump', 'kick', 'left', 'punch', 'right', 'special']);
 });
 test('P1 and P2 keys held simultaneously both register', () => {
   const { t, k } = kb();
@@ -70,4 +70,32 @@ test('detach stops listening', () => {
   k.detach();
   down(t, 'KeyD');
   assert.strictEqual(k.controllers[0].read().right, false);
+});
+
+test('double-tapping a direction dashes that way', () => {
+  const { t, k } = kb();
+  down(t, 'KeyD'); up(t, 'KeyD'); k.endTick(); k.endTick();
+  down(t, 'KeyD');
+  assert.strictEqual(k.controllers[0].read().dashRight, true);
+  assert.strictEqual(k.controllers[0].read().dashLeft, false);
+  k.endTick();
+  assert.strictEqual(k.controllers[0].read().dashRight, false);
+});
+test('slow taps do not dash', () => {
+  const { t, k } = kb();
+  down(t, 'ArrowLeft'); up(t, 'ArrowLeft');
+  for (let i = 0; i < 20; i++) k.endTick();
+  down(t, 'ArrowLeft');
+  assert.strictEqual(k.controllers[1].read().dashLeft, false);
+});
+test('a double tap by one player does not dash the other', () => {
+  const { t, k } = kb();
+  down(t, 'KeyA'); up(t, 'KeyA'); k.endTick(); down(t, 'KeyA');
+  assert.strictEqual(k.controllers[0].read().dashLeft, true);
+  assert.strictEqual(k.controllers[1].read().dashLeft, false);
+});
+test('P pauses like Escape (preventDefault and global edge)', () => {
+  const { t, k } = kb();
+  assert.strictEqual(down(t, 'KeyP').defaultPrevented, true);
+  assert.strictEqual(k.pressedGlobal('KeyP'), true);
 });

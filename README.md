@@ -15,19 +15,32 @@ The first screen asks for **1 Player vs Computer** or **2 Players**:
 | Action | Player 1 | Player 2 |
 |---|---|---|
 | Move / jump / crouch | W A S D | Arrow keys |
-| Punch | F | K |
-| Kick | G | L |
+| Punch / Kick | F / G | K / L |
+| Low jab / sweep (crouching) | S + F / S + G | ↓ + K / ↓ + L |
+| Upward punch (in the air) | F while jumping | K while jumping |
+| Dive kick (in the air) | S + G while jumping | ↓ + L while jumping |
+| Dash forward / back | double-tap D / A | double-tap → / ← |
 | Special | H | ; |
 | Cite (summon a scholar) | R | O |
 | Block | hold away from your opponent | hold away from your opponent |
+| Crouch-block | S + away | ↓ + away |
+| Pause | Esc or P | Esc or P |
+
+Blocking depends on how high the attack is:
+- Lows (low jab and sweep) must be blocked crouching.
+- The dive kick must be blocked standing.
+- Everything else can be blocked either way.
+
+Crouching also ducks under standing punches.
 
 On the character select screen in 2-player mode:
 - Each player moves their cursor with left/right and locks in with Punch. Kick unlocks.
 - The match starts once both players are ready.
 
 Other keys:
-- Enter: rematch (same fighters, same difficulty)
-- Esc: back a screen (from the winner screen, back to the main menu)
+- Esc or P during a fight: pause menu (Resume, Restart match, Character select, Main menu)
+- Enter on the winner screen: rematch (same fighters, same difficulty)
+- Esc on menus: back a screen (from the winner screen, back to the main menu)
 - M: mute
 
 Matches are best of three rounds, with 100 HP and 60 seconds per round. A round that times out with both players on equal HP is a draw. A match still tied after round 3 goes to sudden death.

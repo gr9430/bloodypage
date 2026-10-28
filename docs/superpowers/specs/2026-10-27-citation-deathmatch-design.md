@@ -29,6 +29,20 @@ Bloody Rage was the starting reference for "a simple two-player browser fighter.
   - **Hard:** quick, guards at close range, punishes, dodges projectiles.
 - Enter rematches at the same difficulty. Esc from the winner screen returns to the main menu.
 
+## Added 2026-10-28: pause, dash, directional attacks
+
+- **Pause:** Esc or P during a fight freezes everything, the computer included. The menu offers Resume, Restart match, Character select and Main menu.
+- **Dash:** double-tap forward or back. No new keys.
+- **Downward attacks:**
+  - Crouching punch: low jab.
+  - Crouching kick: sweep.
+  - Lows must be crouch-blocked (Down + away). Crouch-blocking was added for this.
+- **Upward attacks:** these happen in the air, as chosen by the user.
+  - Punch while airborne swings upward.
+  - Down + kick while airborne is a dive kick, which must be blocked standing.
+- Moves carry a `level` (mid, low or overhead) that decides which block stops them.
+- The computer crouch-blocks lows it sees coming and uses sweeps, dashes, jump-ins, upward punches and dive kicks (medium and hard).
+
 ## Non-goals (for now)
 
 - Online play, gamepads, mobile/touch.

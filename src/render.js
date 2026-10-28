@@ -186,6 +186,46 @@
         j.backHand = [-30, -150];
         j.frontHand = [30, -150];
         break;
+      case 'lowPunch':
+        j.hip = -28; j.shoulder = -66;
+        j.backFoot = [-24, 0]; j.frontFoot = [24, 0];
+        j.frontHand = [76, -50]; j.backHand = [-6, -40];
+        j.face = 'yell';
+        break;
+      case 'sweep':
+        j.hip = -24; j.shoulder = -60; j.lean = -6;
+        j.backFoot = [-20, 0]; j.frontFoot = [96, -8];
+        j.backHand = [-30, -18]; j.frontHand = [20, -28];
+        j.face = 'yell';
+        break;
+      case 'airPunch':
+        j.backFoot = [-18, -20]; j.frontFoot = [20, -26];
+        j.frontHand = [44, -182]; j.backHand = [-26, -70];
+        j.face = 'yell';
+        break;
+      case 'diveKick':
+        j.lean = 10;
+        j.frontFoot = [64, 4]; j.backFoot = [-20, -36];
+        j.backHand = [-40, -112]; j.frontHand = [-10, -122];
+        j.face = 'yell';
+        break;
+      case 'crouchBlock':
+        j.hip = -28; j.shoulder = -66;
+        j.backFoot = [-24, 0]; j.frontFoot = [24, 0];
+        j.frontHand = [24, -92]; j.backHand = [16, -78];
+        j.face = 'wince';
+        break;
+      case 'dash':
+        j.lean = 12;
+        j.backFoot = [-32, 0]; j.frontFoot = [30, 0];
+        j.backHand = [-48, -72]; j.frontHand = [-24, -64];
+        break;
+      case 'backdash':
+        j.lean = -10;
+        j.backFoot = [-20, -14]; j.frontFoot = [16, -8];
+        j.frontHand = [32, -82]; j.backHand = [10, -72];
+        j.face = 'o';
+        break;
       case 'win':
         j.backHand = [-48, -158];
         j.frontHand = [56, -158];
@@ -398,8 +438,9 @@
   function poseFor(f) {
     if (f.state === 'ko') return 'ko';
     if (f.state === 'hitstun' || f.state === 'stunned') return 'hurt';
-    if (f.state === 'blockstun' || f.blocking) return 'block';
+    if (f.state === 'blockstun' || f.blocking) return f.crouching ? 'crouchBlock' : 'block';
     if (f.attack) return f.attack.key;
+    if (f.state === 'dash') return f.dashDir === f.facing ? 'dash' : 'backdash';
     if (f.state === 'crouch') return 'crouch';
     if (!f.onGround) return 'jump';
     if (f.state === 'walk') return 'walk';
@@ -638,6 +679,7 @@
     // timer
     blob(ctx, W / 2, top + 16, 36, 28, '#222', 90);
     outlinedText(ctx, String(Math.max(0, Math.ceil(m.timer / CONFIG.tickRate))), W / 2, top + 17, 32, '#fff');
+    plainText(ctx, 'Esc / P: pause', W / 2, top + 58, 12, 'rgba(255,255,255,0.55)');
   }
 
   function drawCiteMeter(ctx, m, i) {
@@ -739,16 +781,20 @@
 
   function controlsColumn(ctx, km, x, ty, title, color) {
     outlinedText(ctx, title, x, ty, 22, color, { align: 'left' });
+    const [up, left, down, right] = [km.up, km.left, km.down, km.right].map(keyLabel);
+    const p = keyLabel(km.punch), k = keyLabel(km.kick);
     const rows = [
-      ['Move', [km.up, km.left, km.down, km.right].map(keyLabel).join(' ')],
-      ['Punch / Kick', `${keyLabel(km.punch)} / ${keyLabel(km.kick)}`],
-      ['Special', keyLabel(km.special)],
-      ['Cite (summon)', keyLabel(km.cite)],
-      ['Block', 'hold away'],
+      ['Move / jump', [up, left, down, right].join(' ')],
+      ['Punch / Kick', `${p} / ${k}`],
+      ['Low (crouch)', `${down} + ${p} / ${k}`],
+      ['In air', `${p} swings up · ${down} + ${k} dive`],
+      ['Dash', `double-tap ${left} / ${right}`],
+      ['Special · Cite', `${keyLabel(km.special)} · ${keyLabel(km.cite)}`],
+      ['Block', `hold away (+ ${down} vs lows)`],
     ];
     rows.forEach(([label, keys], r) => {
-      plainText(ctx, label, x, ty + 26 + r * 19, 15, '#fff3d6', 'left');
-      plainText(ctx, keys, x + 150, ty + 26 + r * 19, 15, '#fff', 'left', LOUD);
+      plainText(ctx, label, x, ty + 22 + r * 16, 13, '#fff3d6', 'left');
+      plainText(ctx, keys, x + 120, ty + 22 + r * 16, 13, '#fff', 'left', LOUD);
     });
   }
 
@@ -778,7 +824,7 @@
     });
 
     // controls table
-    const ty = 392;
+    const ty = 378;
     const p1k = CD.KEYMAP[0], p2k = CD.KEYMAP[1];
     controlsColumn(ctx, p1k, 120, ty, 'PLAYER 1', '#ff5a4a');
     if (cpu) {
@@ -787,10 +833,10 @@
       plainText(ctx, DIFFICULTY_BLURBS[cpu], x, ty + 30, 15, '#fff3d6', 'left');
       plainText(ctx, sel.locked[0] ? `Now pick the computer's fighter.` : 'Pick your fighter first,', x, ty + 56, 15, '#fff', 'left');
       plainText(ctx, sel.locked[0] ? '' : `then the computer's.`, x, ty + 75, 15, '#fff', 'left');
-      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}   ·   ${keyLabel(p1k.kick)}: undo   ·   Esc: back   ·   M: mute`, W / 2, H - 16, 14, '#d8c8ff');
+      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}   ·   ${keyLabel(p1k.kick)}: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
     } else {
       controlsColumn(ctx, p2k, W / 2 + 70, ty, 'PLAYER 2', '#4ab0ff');
-      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}  ·  ${keyLabel(p2k.left)}/${keyLabel(p2k.right)} + ${keyLabel(p2k.punch)}   ·   Kick: undo   ·   Esc: back   ·   M: mute`, W / 2, H - 16, 14, '#d8c8ff');
+      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.punch)}  ·  ${keyLabel(p2k.left)}/${keyLabel(p2k.right)} + ${keyLabel(p2k.punch)}   ·   Kick: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
     }
   }
 
@@ -808,9 +854,34 @@
     if (m.cpu) plainText(ctx, `vs. computer · ${m.cpu}`, W / 2, 150, 15, '#4ab0ff');
   }
 
+  // The frozen match, dimmed, with the pause menu on top.
+  function renderPause(ctx, m, p, tick) {
+    renderMatch(ctx, m, tick);
+    ctx.fillStyle = 'rgba(10,6,16,0.7)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#1e1228';
+    ctx.strokeStyle = INK; ctx.lineWidth = 5;
+    ctx.fillRect(W / 2 - 240, 70, 480, 420);
+    ctx.strokeRect(W / 2 - 240, 70, 480, 420);
+    outlinedText(ctx, 'PAUSED', W / 2, 120, 60, '#ffe14d');
+    CD.PAUSE_OPTIONS.forEach((label, k) => {
+      const y = 210 + k * 58;
+      const on = k === p.cursor;
+      if (on) {
+        ctx.fillStyle = 'rgba(255,225,77,0.15)';
+        ctx.fillRect(W / 2 - 200, y - 24, 400, 48);
+        ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 4;
+        ctx.strokeRect(W / 2 - 200, y - 24, 400, 48);
+      }
+      outlinedText(ctx, label, W / 2, y, on ? 30 : 24, on ? '#ffe14d' : '#d8c8ff');
+    });
+    const km = CD.KEYMAP[0];
+    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.punch)} or Enter: confirm   ·   Esc / P: resume`, W / 2, H - 16, 14, '#d8c8ff');
+  }
+
   function drawMuteIcon(ctx, muted) {
     plainText(ctx, muted ? '🔇 M' : '🔊 M', W - 12, H - 52, 14, 'rgba(255,255,255,0.6)', 'right');
   }
 
-  Object.assign(CD, { pushRenderEvents, clearRenderEvents, tickRenderFx, keyLabel, drawFighterRig, poseFor, renderMatch, renderMenu, renderSelect, renderWinner, drawMuteIcon });
+  Object.assign(CD, { pushRenderEvents, clearRenderEvents, tickRenderFx, keyLabel, drawFighterRig, poseFor, renderMatch, renderMenu, renderPause, renderSelect, renderWinner, drawMuteIcon });
 })(globalThis.CD = globalThis.CD || {});

@@ -1,6 +1,8 @@
 (function (CD) {
   const { KEYMAP } = CD;
   const MODE_OPTIONS = ['1 PLAYER VS COMPUTER', '2 PLAYERS'];
+  const PAUSE_OPTIONS = ['RESUME', 'RESTART MATCH', 'CHARACTER SELECT', 'MAIN MENU'];
+  const PAUSE_ACTIONS = ['resume', 'restart', 'select', 'main'];
   const AUTOSTART_TICKS = 30;
 
   function createMenuState() {
@@ -96,5 +98,16 @@
     return stepSelect(st, pressed);
   }
 
-  Object.assign(CD, { MODE_OPTIONS, createMenuState, stepMenu, backToSelect });
+  function createPauseState() {
+    return { cursor: 0 };
+  }
+
+  // Returns 'resume' | 'restart' | 'select' | 'main' when a choice is made.
+  function stepPause(p, pressed) {
+    if (pressed('Escape') || pressed('KeyP')) return 'resume';
+    if (stepList(p, pressed, 'cursor', PAUSE_OPTIONS.length)) return PAUSE_ACTIONS[p.cursor];
+    return null;
+  }
+
+  Object.assign(CD, { MODE_OPTIONS, PAUSE_OPTIONS, createMenuState, stepMenu, backToSelect, createPauseState, stepPause });
 })(globalThis.CD = globalThis.CD || {});

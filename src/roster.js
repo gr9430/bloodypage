@@ -1,9 +1,15 @@
 (function (CD) {
   // Hitboxes are relative to the fighter's origin (x = center, y = feet), facing right.
+  // `level` decides how a hit can be blocked: mid by any block, low only
+  // crouching, overhead only standing.
   function moves(punchDmg, kickDmg) {
     return {
-      punch: { damage: punchDmg, startup: 4, active: 3, recovery: 8, hitbox: { x: 20, y: -130, w: 62, h: 26 }, knockback: 4, hitstun: 14 },
-      kick: { damage: kickDmg, startup: 7, active: 4, recovery: 12, hitbox: { x: 15, y: -80, w: 82, h: 30 }, knockback: 8, hitstun: 18 },
+      punch: { damage: punchDmg, startup: 4, active: 3, recovery: 8, hitbox: { x: 20, y: -130, w: 62, h: 26 }, knockback: 4, hitstun: 14, level: 'mid' },
+      kick: { damage: kickDmg, startup: 7, active: 4, recovery: 12, hitbox: { x: 15, y: -80, w: 82, h: 30 }, knockback: 8, hitstun: 18, level: 'mid' },
+      lowPunch: { damage: punchDmg - 1, startup: 5, active: 3, recovery: 9, hitbox: { x: 20, y: -62, w: 60, h: 24 }, knockback: 3, hitstun: 13, level: 'low' },
+      sweep: { damage: kickDmg - 1, startup: 9, active: 4, recovery: 16, hitbox: { x: 10, y: -24, w: 96, h: 24 }, knockback: 6, hitstun: 20, level: 'low' },
+      airPunch: { damage: punchDmg, startup: 3, active: 5, recovery: 6, hitbox: { x: 0, y: -215, w: 72, h: 64 }, knockback: 5, hitstun: 16, level: 'mid' },
+      diveKick: { damage: kickDmg, startup: 4, active: 40, recovery: 10, hitbox: { x: 20, y: -44, w: 70, h: 44 }, knockback: 6, hitstun: 16, level: 'overhead' },
     };
   }
 

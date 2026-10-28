@@ -77,3 +77,19 @@ test('backToSelect unlocks picks but keeps mode and difficulty', () => {
   assert.strictEqual(st.cpu, 'medium');
   assert.deepStrictEqual(st.sel.locked, [false, false]);
 });
+
+test('pause menu options and navigation', () => {
+  assert.deepStrictEqual(CD.PAUSE_OPTIONS, ['RESUME', 'RESTART MATCH', 'CHARACTER SELECT', 'MAIN MENU']);
+  const p = CD.createPauseState();
+  assert.strictEqual(CD.stepPause(p, press('KeyS')), null);
+  assert.strictEqual(CD.stepPause(p, press('KeyF')), 'restart');
+  const q = CD.createPauseState();
+  CD.stepPause(q, press('ArrowUp'));
+  assert.strictEqual(CD.stepPause(q, press('Enter')), 'main');
+});
+test('Escape or P resumes from the pause menu', () => {
+  assert.strictEqual(CD.stepPause(CD.createPauseState(), press('Escape')), 'resume');
+  assert.strictEqual(CD.stepPause(CD.createPauseState(), press('KeyP')), 'resume');
+  const p = CD.createPauseState(); CD.stepPause(p, press('KeyS'));
+  assert.strictEqual(CD.stepPause(p, press('KeyK')), 'restart');
+});

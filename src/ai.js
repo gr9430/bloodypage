@@ -3,15 +3,17 @@
   // and presses the same virtual buttons a player would. It only sees what
   // has already happened, delayed by its reaction time.
   //
-  // Chances are per decision (block, dodge, guard, approach) or per tick
-  // (attack, punish, special, cite). Punches come out faster than anyone can
-  // react, so blocking them at close range relies on `guard`: anticipating
-  // an attack by holding back, the way players do.
+  // Chances are per decision (block, dodge, guard, guardLow, approach) or per
+  // tick (attack, punish, special, cite, dash, jumpIn). Punches come out faster
+  // than anyone can react, so blocking them at close range relies on `guard`:
+  // anticipating an attack by holding back, the way players do. Once a low or
+  // overhead attack is seen, the AI crouches or stands to match it.
   const LEVELS = {
-    easy: { reaction: 30, block: 0.1, guard: 0.05, dodge: 0, attack: 0.04, punish: 0.02, special: 0.004, cite: 0.003, approach: 0.55 },
-    medium: { reaction: 14, block: 0.5, guard: 0.4, dodge: 0.35, attack: 0.1, punish: 0.1, special: 0.015, cite: 0.02, approach: 0.85 },
-    hard: { reaction: 4, block: 0.9, guard: 0.8, dodge: 0.75, attack: 0.2, punish: 0.35, special: 0.03, cite: 0.06, approach: 1 },
+    easy: { reaction: 30, block: 0.1, guard: 0.05, guardLow: 0, dodge: 0, attack: 0.04, punish: 0.02, special: 0.004, cite: 0.003, approach: 0.55, dash: 0, jumpIn: 0.002 },
+    medium: { reaction: 14, block: 0.5, guard: 0.4, guardLow: 0.3, dodge: 0.35, attack: 0.1, punish: 0.1, special: 0.015, cite: 0.02, approach: 0.85, dash: 0.03, jumpIn: 0.006 },
+    hard: { reaction: 4, block: 0.9, guard: 0.8, guardLow: 0.3, dodge: 0.75, attack: 0.2, punish: 0.35, special: 0.03, cite: 0.06, approach: 1, dash: 0.05, jumpIn: 0.01 },
   };
+  const BUTTONS = ['jump', 'punch', 'kick', 'special', 'cite', 'dashLeft', 'dashRight'];
   const GUARD_RANGE = 160;
   const BLOCK_HOLD = 20;
   const MOVE_RETHINK = 20;
@@ -39,10 +41,12 @@
   function observe(m, player) {
     const me = m.fighters[player], opp = m.fighters[1 - player];
     const dist = Math.abs(opp.x - me.x);
-    let melee = false;
+    let melee = false, low = false, overhead = false;
     if (opp.attack && opp.attack.key !== 'special' && dist < 170) {
       const mv = opp.def.moves[opp.attack.key];
       melee = opp.attack.frame <= mv.startup + mv.active;
+      low = melee && mv.level === 'low';
+      overhead = melee && mv.level === 'overhead';
     }
     let effect = false, projectile = false;
     for (const e of m.effects) {
@@ -50,14 +54,14 @@
       effect = true;
       if (e.vx !== 0) projectile = true;
     }
-    return { threat: melee || effect, projectile };
+    return { threat: melee || effect, projectile, low, overhead };
   }
 
   function createAI(getMatch, player, level, seed) {
     const cfg = LEVELS[level];
     const rng = makeRng(seed);
     let history = [];
-    let tick = 0, blockUntil = 0, moveDir = 0, moveUntil = 0, guarding = false;
+    let tick = 0, blockUntil = 0, moveDir = 0, moveUntil = 0, guarding = false, guardCrouch = false;
     let prevThreat = false, prevProjectile = false;
     let prevButtons = {};
 
@@ -70,7 +74,9 @@
 
       history.push(observe(m, player));
       if (history.length > cfg.reaction + 1) history.shift();
-      const seen = history.length > cfg.reaction ? history[0] : { threat: false, projectile: false };
+      const seen = history.length > cfg.reaction ? history[0] : { threat: false, projectile: false, low: false, overhead: false };
+      // Block high or low: match a seen low/overhead, otherwise keep the guess.
+      const crouchToBlock = seen.low || (!seen.overhead && guardCrouch);
 
       // React to threats once, when they first come into view.
       if (seen.projectile && !prevProjectile && me.onGround && rng() < cfg.dodge) {
@@ -85,6 +91,7 @@
       prevProjectile = seen.projectile;
       if (tick < blockUntil) {
         hold(-toward);
+        out.down = crouchToBlock;
         return out;
       }
 
@@ -92,6 +99,7 @@
       if (tick >= moveUntil) {
         moveUntil = tick + MOVE_RETHINK;
         guarding = dist < GUARD_RANGE && rng() < cfg.guard;
+        guardCrouch = rng() < cfg.guardLow;
         if (guarding) moveDir = 0;
         else if (dist > MELEE_RANGE - 10) moveDir = rng() < cfg.approach ? 1 : 0;
         else moveDir = 0;
@@ -103,13 +111,24 @@
         const oppMove = opp.attack && opp.attack.key !== 'special' ? opp.def.moves[opp.attack.key] : null;
         const oppRecovering = oppMove && opp.attack.frame > oppMove.startup + oppMove.active;
         // A guarding fighter only lets go of block to punish an opening.
-        if (oppRecovering && dist < MELEE_RANGE + 15 && rng() < cfg.punish) out.punch = true;
-        else if (!guarding && dist < MELEE_RANGE && rng() < cfg.attack) out[rng() < 0.6 ? 'punch' : 'kick'] = true;
-        else if (!guarding && spInRange && rng() < cfg.special) out.special = true;
+        if (!me.onGround) {
+          // In the air: punch upward at jumpers, dive-kick grounded opponents.
+          if (dist < 140 && rng() < 0.25) {
+            if (opp.onGround) { out.down = true; out.kick = true; } else out.punch = true;
+          }
+        } else if (oppRecovering && dist < MELEE_RANGE + 15 && rng() < cfg.punish) out.punch = true;
+        else if (!guarding && dist < MELEE_RANGE && rng() < cfg.attack) {
+          const r = rng();
+          out[r < 0.3 || (r >= 0.55 && r < 0.75) ? 'punch' : 'kick'] = true;
+          out.down = r >= 0.55; // the last 45% are low jabs and sweeps
+        } else if (!guarding && spInRange && rng() < cfg.special) out.special = true;
         else if (m.cites[player].cooldown === 0 && rng() < cfg.cite) out.cite = true;
+        else if (!guarding && dist > 200 && rng() < cfg.dash) out[toward > 0 ? 'dashRight' : 'dashLeft'] = true;
+        else if (!guarding && dist > 140 && dist < 260 && rng() < cfg.jumpIn) { out.jump = true; moveDir = 1; }
       }
 
       hold(guarding ? -toward : moveDir * toward);
+      if (guarding && me.onGround && !out.punch && !out.kick) out.down = crouchToBlock;
       return out;
     }
 
@@ -124,7 +143,7 @@
         }
         const out = decide(m);
         // Buttons are presses: never report the same button two ticks running.
-        for (const b of ['jump', 'punch', 'kick', 'special', 'cite']) {
+        for (const b of BUTTONS) {
           const pressed = out[b];
           if (pressed && prevButtons[b]) out[b] = false;
           prevButtons[b] = pressed;
