@@ -58,7 +58,10 @@
       } else if (a.phase === 'attack') {
         if (!a.effectSpawned) {
           a.effectSpawned = true;
-          newEffects.push(CD.spawnEffect(a.assist.kind, a.owner, a, target, a.assist));
+          const e = CD.spawnEffect(a.assist.kind, a.owner, a, target, a.assist);
+          e.look = a.look;
+          e.label = a.name;
+          newEffects.push(e);
           events.push({ type: 'whoosh', player: a.owner });
         }
         if (a.timer <= 0) { a.phase = 'exit'; a.timer = EXIT_TICKS; }

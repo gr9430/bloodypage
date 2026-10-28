@@ -24,3 +24,22 @@ function fakeTarget() {
 }
 
 module.exports.fakeTarget = fakeTarget;
+
+// Canvas 2D context stand-in: every method is a no-op, properties are
+// settable, and fillText/strokeText strings are recorded in ctx.texts.
+function fakeCtx() {
+  const store = { texts: [], calls: 0 };
+  const gradient = { addColorStop() {} };
+  return new Proxy(store, {
+    get(t, prop) {
+      if (prop in t) return t[prop];
+      if (prop === 'measureText') return (s) => ({ width: String(s).length * 10 });
+      if (prop === 'createLinearGradient' || prop === 'createRadialGradient') return () => gradient;
+      if (prop === 'fillText' || prop === 'strokeText') return (s) => { t.calls++; t.texts.push(String(s)); };
+      return () => { t.calls++; };
+    },
+    set(t, prop, v) { t[prop] = v; return true; },
+  });
+}
+
+module.exports.fakeCtx = fakeCtx;
