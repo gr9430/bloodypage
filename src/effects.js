@@ -3,13 +3,15 @@
   const DEFAULT_HITSTUN = 20;
 
   // Builds one effect. Shared by fighters' specials and summoned assists.
+  // Optional params: `look` and `label` draw a summoned scholar; `fromSpecial`
+  // marks hits that don't build the specialty bar.
   function spawnEffect(kind, owner, ownerFighter, target, params) {
     const facing = ownerFighter.facing;
     const base = {
       kind, owner, vx: 0, vy: 0, age: 0, armedAt: 0, hasHit: false, landed: false,
       damage: params.damage, knockback: params.knockback,
       hitstun: params.hitstun || DEFAULT_HITSTUN, stunTicks: params.stunTicks,
-      label: params.name,
+      look: params.look, label: params.label, fromSpecial: !!params.fromSpecial,
     };
     switch (kind) {
       case 'stunZone':
@@ -35,9 +37,7 @@
   }
 
   function spawnSpecial(fighter, opponent) {
-    const e = spawnEffect(fighter.def.special.kind, fighter.player, fighter, opponent, fighter.def.special);
-    e.fromSpecial = true;
-    return e;
+    return spawnEffect(fighter.def.special.kind, fighter.player, fighter, opponent, { ...fighter.def.special, fromSpecial: true });
   }
 
   // Where a hit "comes from", for knockback direction and blocking.
@@ -77,7 +77,7 @@
           damage: e.damage, knockback: e.knockback, hitstun: e.hitstun, stunTicks: e.stunTicks,
           fromX: hitOrigin(e, owner, target), lucky: CD.luckyRoll(rng),
         });
-        if (result !== 'ignored') events.push(CD.hitEvent(result, e.owner, e.x + e.w / 2, e.y + e.h / 2, { fromSpecial: !!e.fromSpecial }));
+        if (result !== 'ignored') events.push(CD.hitEvent(result, e.owner, e.x + e.w / 2, e.y + e.h / 2, { fromSpecial: e.fromSpecial }));
         if (e.kind === 'projectile') e.ttl = 0;
       }
       if (e.ttl > 0 && !offStage(e)) kept.push(e);

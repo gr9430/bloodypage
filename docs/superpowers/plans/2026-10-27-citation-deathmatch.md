@@ -1,3 +1,5 @@
+> **Historical.** This is the original build plan for the first version (then called "Citation Deathmatch", with Mignolo and separate punch/kick buttons). The game has changed since; see the README and the design spec for how it works now.
+
 # Citation Deathmatch Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

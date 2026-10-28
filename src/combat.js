@@ -80,7 +80,7 @@
   function pendingHit(attacker, defender) {
     const hb = CD.attackHitbox(attacker);
     if (!hb || !rectsOverlap(hb, CD.hurtbox(defender))) return null;
-    return { attacker, defender, hb, move: attacker.def.moves[attacker.attack.key] };
+    return { attacker, defender, hb, move: attacker.attack.move };
   }
 
   function applyPending(p, rng) {
@@ -89,11 +89,6 @@
     const result = applyHit(p.defender, { damage: move.damage, knockback: move.knockback, hitstun: move.hitstun, level: move.level, fromX: p.attacker.x, lucky: luckyRoll(rng) });
     if (result === 'ignored') return [];
     return [hitEvent(result, p.attacker.player, hb.x + hb.w / 2, hb.y + hb.h / 2)];
-  }
-
-  function resolveFighterHits(attacker, defender) {
-    const p = pendingHit(attacker, defender);
-    return p ? applyPending(p) : [];
   }
 
   // Both fighters' hits are found before any hit lands (including effects,
@@ -108,9 +103,5 @@
     return pending.flatMap((p) => applyPending(p, rng));
   }
 
-  function resolveTrade(a, b) {
-    return applyHits(findHits(a, b));
-  }
-
-  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, luckyRoll, hitEvent, resolveFighterHits, findHits, applyHits, resolveTrade });
+  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, luckyRoll, hitEvent, findHits, applyHits });
 })(globalThis.CD = globalThis.CD || {});

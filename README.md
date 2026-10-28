@@ -173,7 +173,7 @@ src/render.js       all drawing: stage, fighters, HUD, screens
 src/audio.js        synthesized sound effects
 src/main.js         the game loop that ties it together
 tests/              automated tests (Node)
-docs/               design notes and the build plan
+docs/               design spec (with dated changes) and the original build plan
 ```
 
 All art is drawn in code and all sounds are synthesized, so there are no image or audio files.

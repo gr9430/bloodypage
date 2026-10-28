@@ -1,5 +1,6 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'menu');
+const { load } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'menu');
 
 // pressed() helper: the set of codes pressed this tick.
 const press = (...codes) => (c) => codes.includes(c);

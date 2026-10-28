@@ -1,8 +1,8 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat');
+const { load, input } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat');
 const { CONFIG } = CD;
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 const pair = () => [CD.createFighter(CD.FIGHTERS.foucault, 0, false), CD.createFighter(CD.FIGHTERS.chomsky, 1, false)];
 
 test('fighters spawn on the floor facing each other', () => {

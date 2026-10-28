@@ -1,8 +1,13 @@
 (function (CD) {
   const { KEYMAP } = CD;
   const MODE_OPTIONS = ['1 PLAYER VS COMPUTER', '2 PLAYERS'];
-  const PAUSE_OPTIONS = ['RESUME', 'RESTART MATCH', 'CHARACTER SELECT', 'MAIN MENU'];
-  const PAUSE_ACTIONS = ['resume', 'restart', 'select', 'main'];
+  const PAUSE_MENU = [
+    { label: 'RESUME', action: 'resume' },
+    { label: 'RESTART MATCH', action: 'restart' },
+    { label: 'CHARACTER SELECT', action: 'select' },
+    { label: 'MAIN MENU', action: 'main' },
+  ];
+  const PAUSE_OPTIONS = PAUSE_MENU.map((o) => o.label);
   const AUTOSTART_TICKS = 30;
 
   function createMenuState() {
@@ -26,15 +31,26 @@
     return KEYMAP.some((km) => pressed(km[field]));
   }
 
+  function wrap(i, delta, n) {
+    return (i + delta + n) % n;
+  }
+
   function stepList(st, pressed, key, count) {
-    if (anyOf(pressed, 'up')) st[key] = (st[key] + count - 1) % count;
-    if (anyOf(pressed, 'down')) st[key] = (st[key] + 1) % count;
+    if (anyOf(pressed, 'up')) st[key] = wrap(st[key], -1, count);
+    if (anyOf(pressed, 'down')) st[key] = wrap(st[key], 1, count);
     return anyOf(pressed, 'attack') || pressed('Enter');
+  }
+
+  // Moves pick i's cursor with km's left/right; attack locks it in.
+  function stepPick(sel, i, km, pressed) {
+    const n = CD.fighterIds.length;
+    if (pressed(km.left)) sel.cursor[i] = wrap(sel.cursor[i], -1, n);
+    if (pressed(km.right)) sel.cursor[i] = wrap(sel.cursor[i], 1, n);
+    if (pressed(km.attack)) sel.locked[i] = true;
   }
 
   function stepSelect(st, pressed) {
     const sel = st.sel;
-    const n = CD.fighterIds.length;
     if (st.cpu) {
       // One human picks both fighters: their own, then the computer's.
       const km = KEYMAP[0];
@@ -43,17 +59,13 @@
         if (sel.locked[1]) sel.locked[1] = false;
         else sel.locked[0] = false;
       } else if (!sel.locked[active]) {
-        if (pressed(km.left)) sel.cursor[active] = (sel.cursor[active] + n - 1) % n;
-        if (pressed(km.right)) sel.cursor[active] = (sel.cursor[active] + 1) % n;
-        if (pressed(km.attack)) sel.locked[active] = true;
+        stepPick(sel, active, km, pressed);
       }
     } else {
       for (let i = 0; i < 2; i++) {
         const km = KEYMAP[i];
         if (!sel.locked[i]) {
-          if (pressed(km.left)) sel.cursor[i] = (sel.cursor[i] + n - 1) % n;
-          if (pressed(km.right)) sel.cursor[i] = (sel.cursor[i] + 1) % n;
-          if (pressed(km.attack)) sel.locked[i] = true;
+          stepPick(sel, i, km, pressed);
         } else if (pressed(km.special)) {
           sel.locked[i] = false;
         }
@@ -105,7 +117,7 @@
   // Returns 'resume' | 'restart' | 'select' | 'main' when a choice is made.
   function stepPause(p, pressed) {
     if (pressed('Escape') || pressed('KeyP')) return 'resume';
-    if (stepList(p, pressed, 'cursor', PAUSE_OPTIONS.length)) return PAUSE_ACTIONS[p.cursor];
+    if (stepList(p, pressed, 'cursor', PAUSE_OPTIONS.length)) return PAUSE_MENU[p.cursor].action;
     return null;
   }
 

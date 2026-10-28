@@ -1,7 +1,7 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects');
+const { load, input } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects');
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 function vs(id, gap = 200) {
   const a = CD.createFighter(CD.FIGHTERS[id], 0, false), b = CD.createFighter(CD.FIGHTERS.chomsky, 1, false);
   a.x = 400; b.x = 400 + gap;

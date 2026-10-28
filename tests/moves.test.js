@@ -1,8 +1,8 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match');
+const { load, input } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match');
 const { CONFIG } = CD;
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 function pair(gap = 70) {
   const a = CD.createFighter(CD.FIGHTERS.foucault, 0, false), b = CD.createFighter(CD.FIGHTERS.chomsky, 1, false);
   a.x = 400; b.x = 400 + gap;
@@ -14,7 +14,7 @@ function exchange(a, b, first, { hold = {}, bHold = {}, ticks = 50 } = {}) {
   for (let i = 0; i < ticks; i++) {
     CD.updateFighter(a, input(i === 0 ? { ...hold, ...first } : hold), b);
     CD.updateFighter(b, input(bHold), a);
-    events.push(...CD.resolveTrade(a, b));
+    events.push(...CD.applyHits(CD.findHits(a, b)));
   }
   return events;
 }

@@ -29,11 +29,21 @@
       o.stop(t + dur + 0.02);
     }
 
+    // Noise bursts are made once per duration and reused.
+    const noiseBuffers = new Map();
+    function noiseBuffer(dur) {
+      if (!noiseBuffers.has(dur)) {
+        const len = Math.floor(ac.sampleRate * dur);
+        const buf = ac.createBuffer(1, len, ac.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+        noiseBuffers.set(dur, buf);
+      }
+      return noiseBuffers.get(dur);
+    }
+
     function noise(dur, vol = 0.2, cutoff = 1800) {
-      const len = Math.floor(ac.sampleRate * dur);
-      const buf = ac.createBuffer(1, len, ac.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      const buf = noiseBuffer(dur);
       const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
       src.buffer = buf;
       f.type = 'lowpass';

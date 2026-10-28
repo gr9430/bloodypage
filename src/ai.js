@@ -30,11 +30,11 @@
     const me = m.fighters[player], opp = m.fighters[1 - player];
     const dist = Math.abs(opp.x - me.x);
     let melee = false, low = false, overhead = false;
-    if (opp.attack && opp.attack.key !== 'special' && dist < 170) {
-      const mv = opp.def.moves[opp.attack.key];
-      melee = opp.attack.frame <= mv.startup + mv.active;
-      low = melee && mv.level === 'low';
-      overhead = melee && mv.level === 'overhead';
+    const phase = CD.attackPhase(opp);
+    if ((phase === 'startup' || phase === 'active') && dist < 170) {
+      melee = true;
+      low = opp.attack.move.level === 'low';
+      overhead = opp.attack.move.level === 'overhead';
     }
     let effect = false, projectile = false;
     for (const e of m.effects) {
@@ -97,15 +97,14 @@
       if (CD.isActionable(me)) {
         const sp = me.def.special;
         const spInRange = sp.kind === 'burst' ? dist < 170 : dist > 120;
-        const oppMove = opp.attack && opp.attack.key !== 'special' ? opp.def.moves[opp.attack.key] : null;
-        const oppRecovering = oppMove && opp.attack.frame > oppMove.startup + oppMove.active;
-        // A guarding fighter only lets go of block to punish an opening.
+        const oppRecovering = CD.attackPhase(opp) === 'recovery';
         if (!me.onGround) {
           // In the air: punch upward at jumpers, dive-kick grounded opponents.
           if (dist < 140 && rng() < 0.25) {
             out.attack = true;
             out.down = opp.onGround; // dive at grounded opponents, swing up at jumpers
           }
+        // A guarding fighter only lets go of block to punish an opening.
         } else if (oppRecovering && dist < MELEE_RANGE + 15 && rng() < cfg.punish) out.attack = true;
         else if (!guarding && dist < MELEE_RANGE && rng() < cfg.attack) {
           // Roughly: 40% punch, 30% kick (attack + toward), 30% sweep (attack + down).

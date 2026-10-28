@@ -1,5 +1,6 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster');
+const { load } = require('./helpers');
+const CD = load('config', 'roster');
 
 test('four playable fighters', () => {
   assert.deepStrictEqual(CD.fighterIds, ['foucault', 'chomsky', 'mcluhan', 'ong']);
@@ -41,7 +42,7 @@ test('fighters are summonable by name', () => {
   assert.deepStrictEqual(CD.resolveScholar('Walter Ong').look, CD.FIGHTERS.ong.look);
   assert.deepStrictEqual(CD.resolveScholar('Marshall McLuhan').look, CD.FIGHTERS.mcluhan.look);
 });
-test('Mignolo is no longer playable', () => {
+test('a former fighter name resolves to a generic summoned scholar', () => {
   assert.strictEqual(CD.FIGHTERS.mignolo, undefined);
   assert.strictEqual(CD.resolveScholar('Walter Mignolo').assist.kind, 'rush');
 });

@@ -103,8 +103,7 @@ test('renderSelect labels the computer as CPU and shows the difficulty', () => {
   assert.ok(!all.includes('PLAYER 2'));
 });
 test('match HUD marks the computer side', () => {
-  const m = CD.createMatch('foucault', 'chomsky');
-  m.cpu = 'easy';
+  const m = CD.createMatch('foucault', 'chomsky', 1, 'easy');
   const ctx = fakeCtx();
   CD.renderMatch(ctx, m, 1);
   assert.ok(ctx.texts.join('|').includes('CPU · EASY'));
@@ -119,7 +118,7 @@ test('menus show the game title and tagline', () => {
   assert.ok(!all.includes('CITATION DEATHMATCH'));
 });
 
-test('poseFor covers the new moves', () => {
+test('poseFor covers sweeps, air attacks, crouch-blocks and dashes', () => {
   const f = CD.createFighter(CD.FIGHTERS.foucault, 0, false);
   f.state = 'attack';
   for (const k of ['sweep', 'airPunch', 'diveKick']) { f.attack = { key: k, frame: 1 }; assert.strictEqual(CD.poseFor(f), k); }

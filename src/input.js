@@ -1,7 +1,7 @@
 (function (CD) {
   // InputFrame: directions are true while held; buttons (and jump) are true
   // only on the tick the key went down. Any Controller ({ read() }) can drive
-  // a fighter, keyboard or (later) AI.
+  // a fighter: the keyboard here, or the computer opponent in ai.js.
   function idleInput() {
     return { left: false, right: false, down: false, jump: false, attack: false, special: false, cite: false, dashLeft: false, dashRight: false };
   }

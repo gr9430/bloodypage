@@ -22,8 +22,7 @@
   // cpu is a difficulty level, or null for two players.
   function startMatch(p1, p2, cpu) {
     CD.clearRenderEvents();
-    game.match = CD.createMatch(p1, p2, Date.now());
-    game.match.cpu = cpu;
+    game.match = CD.createMatch(p1, p2, Date.now(), cpu);
     game.ai = cpu ? CD.createAI(() => game.match, 1, cpu, Date.now()) : null;
     game.endTimer = 0;
     game.pause = null;

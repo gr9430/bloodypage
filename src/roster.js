@@ -8,7 +8,7 @@
       kick: { damage: kickDmg, startup: 7, active: 4, recovery: 12, hitbox: { x: 15, y: -80, w: 82, h: 30 }, knockback: 8, hitstun: 18, level: 'mid' },
       sweep: { damage: kickDmg - 1, startup: 9, active: 4, recovery: 16, hitbox: { x: 10, y: -24, w: 96, h: 24 }, knockback: 6, hitstun: 20, level: 'low' },
       airPunch: { damage: punchDmg, startup: 3, active: 5, recovery: 6, hitbox: { x: 0, y: -215, w: 72, h: 64 }, knockback: 5, hitstun: 16, level: 'mid' },
-      diveKick: { damage: kickDmg, startup: 4, active: 40, recovery: 10, hitbox: { x: 20, y: -44, w: 70, h: 44 }, knockback: 6, hitstun: 16, level: 'overhead' },
+      diveKick: { damage: kickDmg, startup: 4, active: 40, recovery: 10, hitbox: { x: 20, y: -44, w: 70, h: 44 }, knockback: 6, hitstun: 16, level: 'overhead', dive: { vx: 9, vy: 12 } },
     };
   }
 
@@ -114,5 +114,5 @@
     return genericScholar(name);
   }
 
-  Object.assign(CD, { FIGHTERS, SCHOLARS, fighterIds, resolveScholar });
+  Object.assign(CD, { FIGHTERS, fighterIds, resolveScholar });
 })(globalThis.CD = globalThis.CD || {});

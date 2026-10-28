@@ -37,9 +37,10 @@
     return Math.sin(frameTick * 0.35 + i * 1.7) * 1.1;
   }
 
+  const ARROWS = { ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓' };
+
   function keyLabel(code) {
-    const arrows = { ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓' };
-    if (arrows[code]) return arrows[code];
+    if (ARROWS[code]) return ARROWS[code];
     if (code === 'Semicolon') return ';';
     if (code.startsWith('Key')) return code.slice(3);
     if (code.startsWith('Digit')) return code.slice(5);
@@ -616,14 +617,14 @@
         const s = f.big ? 1.6 : 1;
         star(ctx, f.x, f.y, (18 + (1 - life) * 22) * s, f.color);
         outlinedText(ctx, f.word, f.x, f.y - 40 * s - (1 - life) * 20, 28 * s, f.color);
-      } else if (f.type === 'fizzle' && match) {
-        const fighter = match.fighters[f.player];
+        continue;
+      }
+      const fighter = match.fighters[f.player];
+      if (f.type === 'fizzle') {
         outlinedText(ctx, 'NOT YET!', fighter.x, fighter.y - 215 - (1 - life) * 10, 20, '#b8b8c8');
-      } else if (f.type === 'bubble' && match) {
-        const fighter = match.fighters[f.player];
+      } else if (f.type === 'bubble') {
         speechBubble(ctx, f.text, fighter.x, fighter.y - 205);
-      } else if (f.type === 'callout' && match) {
-        const fighter = match.fighters[f.player];
+      } else if (f.type === 'callout') {
         outlinedText(ctx, fighter.def.special.name.toUpperCase() + '!', fighter.x, fighter.y - 250 - (1 - life) * 15, 30, '#ffb3f0');
       }
     }
@@ -654,19 +655,24 @@
     return '#ef5a4a';
   }
 
+  // A meter: dark track, `ratio` filled (from the right if fromRight), inked border.
+  function drawBar(ctx, x, y, w, h, ratio, color, fromRight, lineWidth = 3) {
+    const fillW = w * Math.max(0, Math.min(1, ratio));
+    ctx.fillStyle = '#222';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = color;
+    ctx.fillRect(fromRight ? x + w - fillW : x, y, fillW, h);
+    ctx.strokeStyle = INK; ctx.lineWidth = lineWidth;
+    ctx.strokeRect(x, y, w, h);
+  }
+
   function drawHud(ctx, m) {
     const barW = 380, barH = 26, top = 18;
     for (let i = 0; i < 2; i++) {
       const f = m.fighters[i];
       const ratio = f.hp / CONFIG.maxHp;
       const x = i === 0 ? 30 : W - 30 - barW;
-      ctx.fillStyle = '#222';
-      ctx.fillRect(x, top, barW, barH);
-      ctx.fillStyle = hpColor(ratio);
-      const fillW = barW * ratio;
-      ctx.fillRect(i === 0 ? x + barW - fillW : x, top, fillW, barH);
-      ctx.strokeStyle = INK; ctx.lineWidth = 4;
-      ctx.strokeRect(x, top, barW, barH);
+      drawBar(ctx, x, top, barW, barH, ratio, hpColor(ratio), i === 0, 4);
       drawSpecialBar(ctx, f, i, i === 0 ? x : x + barW - 240, top + barH + 5);
       outlinedText(ctx, f.def.name.toUpperCase(), i === 0 ? x : x + barW, top + barH + 36, 20, '#fff', { align: i === 0 ? 'left' : 'right' });
       if (i === 1 && m.cpu) plainText(ctx, `CPU · ${m.cpu.toUpperCase()}`, x + barW, top + barH + 58, 15, '#4ab0ff', 'right', LOUD);
@@ -687,13 +693,8 @@
   function drawSpecialBar(ctx, f, i, x, y) {
     const w = 240, h = 13;
     const full = f.meter >= CONFIG.meterMax;
-    const fillW = w * Math.min(1, f.meter / CONFIG.meterMax);
-    ctx.fillStyle = '#222';
-    ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = full ? (frameTick % 20 < 10 ? '#ff8a3d' : '#ffe14d') : '#e0702a';
-    ctx.fillRect(i === 0 ? x : x + w - fillW, y, fillW, h);
-    ctx.strokeStyle = INK; ctx.lineWidth = 3;
-    ctx.strokeRect(x, y, w, h);
+    const color = full ? (frameTick % 20 < 10 ? '#ff8a3d' : '#ffe14d') : '#e0702a';
+    drawBar(ctx, x, y, w, h, f.meter / CONFIG.meterMax, color, i === 1);
     const label = full ? `SPECIAL READY [${keyLabel(CD.KEYMAP[i].special)}]` : 'SPECIAL';
     plainText(ctx, label, i === 0 ? x + w + 8 : x - 8, y + h / 2 + 1, 13, full ? '#ffe14d' : 'rgba(255,255,255,0.7)', i === 0 ? 'left' : 'right', LOUD);
   }
@@ -703,13 +704,8 @@
     const ready = cs.cooldown === 0;
     const w = 220, h = 14, y = H - 34;
     const x = i === 0 ? 24 : W - 24 - w;
-    const fill = 1 - cs.cooldown / CONFIG.citeCooldownTicks;
-    ctx.fillStyle = '#222';
-    ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = ready ? (frameTick % 30 < 15 ? '#ffb3f0' : '#ff7fe0') : '#8a6a9a';
-    ctx.fillRect(x, y, w * fill, h);
-    ctx.strokeStyle = INK; ctx.lineWidth = 3;
-    ctx.strokeRect(x, y, w, h);
+    const color = ready ? (frameTick % 30 < 15 ? '#ffb3f0' : '#ff7fe0') : '#8a6a9a';
+    drawBar(ctx, x, y, w, h, 1 - cs.cooldown / CONFIG.citeCooldownTicks, color, false);
     const key = keyLabel(CD.KEYMAP[i].cite);
     plainText(ctx, (ready ? `CITE [${key}] ` : 'citing… ') + `Next: ${CD.nextCitation(cs)}`, i === 0 ? x : x + w, y - 12, 15, '#fff', i === 0 ? 'left' : 'right');
   }
@@ -768,6 +764,27 @@
     hard: 'Blocks, punishes, dodges. Peer review.',
   };
 
+  // A centered vertical list with the cursor row boxed and highlighted.
+  function drawOptionList(ctx, options, cursor, y0, step, boxW, boxH, size) {
+    options.forEach((label, k) => {
+      const y = y0 + k * step;
+      const on = k === cursor;
+      if (on) {
+        ctx.fillStyle = 'rgba(255,225,77,0.15)';
+        ctx.fillRect(W / 2 - boxW / 2, y - boxH / 2, boxW, boxH);
+        ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 4;
+        ctx.strokeRect(W / 2 - boxW / 2, y - boxH / 2, boxW, boxH);
+      }
+      outlinedText(ctx, label, W / 2, y, on ? size : size - 6, on ? '#ffe14d' : '#d8c8ff');
+    });
+  }
+
+  // Footer hint for list menus, with any extra keys appended.
+  function listHint(ctx, extra) {
+    const km = CD.KEYMAP[0];
+    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.attack)} or Enter: confirm` + extra, W / 2, H - 16, 14, '#d8c8ff');
+  }
+
   // The mode and difficulty screens: a vertical list with a cursor.
   function renderMenu(ctx, st, tick) {
     frameTick = tick;
@@ -776,23 +793,12 @@
     const options = isMode ? CD.MODE_OPTIONS : CD.aiLevels.map((l) => l.toUpperCase());
     const cursor = isMode ? st.modeCursor : st.diffCursor;
     outlinedText(ctx, isMode ? 'CHOOSE YOUR FORMAT' : 'HOW TOUGH IS THE REVIEWER?', W / 2, 140, 30, '#fff');
-    options.forEach((label, k) => {
-      const y = 205 + k * 62;
-      const on = k === cursor;
-      if (on) {
-        ctx.fillStyle = 'rgba(255,225,77,0.15)';
-        ctx.fillRect(W / 2 - 230, y - 26, 460, 52);
-        ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 4;
-        ctx.strokeRect(W / 2 - 230, y - 26, 460, 52);
-      }
-      outlinedText(ctx, label, W / 2, y, on ? 32 : 26, on ? '#ffe14d' : '#d8c8ff');
-    });
+    drawOptionList(ctx, options, cursor, 205, 62, 460, 52, 32);
     if (!isMode) plainText(ctx, DIFFICULTY_BLURBS[CD.aiLevels[cursor]], W / 2, 205 + options.length * 62, 18, '#fff3d6');
     // the 1971 grudge match, waiting in the wings
     drawFighterRig(ctx, CD.FIGHTERS.foucault.look, 110, H - 40, 1, 'idle', 0.9);
     drawFighterRig(ctx, CD.FIGHTERS.chomsky.look, W - 110, H - 40, -1, 'idle', 0.9);
-    const km = CD.KEYMAP[0];
-    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.attack)} or Enter: confirm` + (isMode ? '' : '   ·   Esc: back') + '   ·   M: mute', W / 2, H - 16, 14, '#d8c8ff');
+    listHint(ctx, (isMode ? '' : '   ·   Esc: back') + '   ·   M: mute');
   }
 
   function controlsColumn(ctx, km, x, ty, title, color) {
@@ -820,7 +826,10 @@
     menuBackground(ctx);
     const p2Name = cpu ? 'CPU' : 'P2';
 
-    const cardW = 210, gap = 20, x0 = (W - (cardW * 4 + gap * 3)) / 2, cy = 110, cardH = 250;
+    // Cards share the width, so adding a fighter to the roster still fits.
+    const n = CD.fighterIds.length, gap = 20, cy = 110, cardH = 250;
+    const cardW = Math.min(210, (W - 40 - gap * (n - 1)) / n);
+    const x0 = (W - (cardW * n + gap * (n - 1))) / 2;
     CD.fighterIds.forEach((id, k) => {
       const def = CD.FIGHTERS[id];
       const x = x0 + k * (cardW + gap);
@@ -849,11 +858,12 @@
       plainText(ctx, DIFFICULTY_BLURBS[cpu], x, ty + 30, 15, '#fff3d6', 'left');
       plainText(ctx, sel.locked[0] ? `Now pick the computer's fighter.` : 'Pick your fighter first,', x, ty + 56, 15, '#fff', 'left');
       plainText(ctx, sel.locked[0] ? '' : `then the computer's.`, x, ty + 75, 15, '#fff', 'left');
-      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.attack)}   ·   ${keyLabel(p1k.special)}: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
     } else {
       controlsColumn(ctx, p2k, W / 2 + 70, ty, 'PLAYER 2', '#4ab0ff');
-      plainText(ctx, `Pick: ${keyLabel(p1k.left)}/${keyLabel(p1k.right)} + ${keyLabel(p1k.attack)}  ·  ${keyLabel(p2k.left)}/${keyLabel(p2k.right)} + ${keyLabel(p2k.attack)}   ·   Special: undo   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
     }
+    const pick = (km) => `${keyLabel(km.left)}/${keyLabel(km.right)} + ${keyLabel(km.attack)}`;
+    const picks = cpu ? `${pick(p1k)}   ·   ${keyLabel(p1k.special)}: undo` : `${pick(p1k)}  ·  ${pick(p2k)}   ·   Special: undo`;
+    plainText(ctx, `Pick: ${picks}   ·   Esc: back   ·   In a fight, Esc / P: pause   ·   M: mute`, W / 2, H - 12, 13, '#d8c8ff');
   }
 
   function renderWinner(ctx, m, tick) {
@@ -880,19 +890,8 @@
     ctx.fillRect(W / 2 - 240, 70, 480, 420);
     ctx.strokeRect(W / 2 - 240, 70, 480, 420);
     outlinedText(ctx, 'PAUSED', W / 2, 120, 60, '#ffe14d');
-    CD.PAUSE_OPTIONS.forEach((label, k) => {
-      const y = 210 + k * 58;
-      const on = k === p.cursor;
-      if (on) {
-        ctx.fillStyle = 'rgba(255,225,77,0.15)';
-        ctx.fillRect(W / 2 - 200, y - 24, 400, 48);
-        ctx.strokeStyle = '#ffe14d'; ctx.lineWidth = 4;
-        ctx.strokeRect(W / 2 - 200, y - 24, 400, 48);
-      }
-      outlinedText(ctx, label, W / 2, y, on ? 30 : 24, on ? '#ffe14d' : '#d8c8ff');
-    });
-    const km = CD.KEYMAP[0];
-    plainText(ctx, `${keyLabel(km.up)}/${keyLabel(km.down)} or ↑/↓: choose   ·   ${keyLabel(km.attack)} or Enter: confirm   ·   Esc / P: resume`, W / 2, H - 16, 14, '#d8c8ff');
+    drawOptionList(ctx, CD.PAUSE_OPTIONS, p.cursor, 210, 58, 400, 48, 30);
+    listHint(ctx, '   ·   Esc / P: resume');
   }
 
   function drawMuteIcon(ctx, muted) {

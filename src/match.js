@@ -1,26 +1,20 @@
 (function (CD) {
   const { CONFIG } = CD;
 
-  function createMatch(p1Id, p2Id, seed = 1) {
+  // cpu is the computer's difficulty when P2 is the computer, else null.
+  function createMatch(p1Id, p2Id, seed = 1, cpu = null) {
     const m = {
       rng: CD.makeRng(seed),
+      cpu,
       fighterIds: [p1Id, p2Id],
       fighters: null,
       cites: [CD.createCitationState(CD.FIGHTERS[p1Id].citations), CD.createCitationState(CD.FIGHTERS[p2Id].citations)],
-      effects: [],
-      assists: [],
       wins: [0, 0],
-      round: 1,
-      phase: 'intro',
-      phaseTimer: CONFIG.introTicks,
-      timer: CONFIG.roundTicks,
-      roundResult: null,
+      round: 0,
       winner: null,
-      suddenDeath: false,
-      banner: 'ROUND 1',
       announced: null,
     };
-    resetFighters(m);
+    startRound(m);
     return m;
   }
 
@@ -49,7 +43,6 @@
 
   function startRound(m) {
     m.round++;
-    m.suddenDeath = m.round > 3;
     resetFighters(m);
     for (const cs of m.cites) cs.cooldown = 0;
     m.effects = [];
@@ -58,7 +51,7 @@
     m.roundResult = null;
     m.phase = 'intro';
     m.phaseTimer = CONFIG.introTicks;
-    m.banner = m.suddenDeath ? 'SUDDEN DEATH' : 'ROUND ' + m.round;
+    m.banner = m.round > 3 ? 'SUDDEN DEATH' : 'ROUND ' + m.round;
   }
 
   function endRound(m, result, banner, events) {

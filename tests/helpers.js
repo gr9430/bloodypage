@@ -7,7 +7,19 @@ function load(...files) {
   return globalThis.CD;
 }
 
-module.exports = { load };
+// An InputFrame with nothing pressed except the given overrides.
+function input(overrides = {}) {
+  return { ...globalThis.CD.idleInput(), ...overrides };
+}
+
+// Steps a match through its intro so the fight has started; returns the events.
+function toFight(m) {
+  const events = [];
+  while (m.phase === 'intro') events.push(...globalThis.CD.stepMatch(m, [input(), input()]));
+  return events;
+}
+
+module.exports = { load, input, toFight };
 
 // Minimal EventTarget stand-in for keyboard tests.
 function fakeTarget() {
@@ -30,13 +42,19 @@ module.exports.fakeTarget = fakeTarget;
 function fakeCtx() {
   const store = { texts: [], calls: 0 };
   const gradient = { addColorStop() {} };
+  // Built once per fake, not per method access.
+  const methods = {
+    measureText: (s) => ({ width: String(s).length * 10 }),
+    createLinearGradient: () => gradient,
+    createRadialGradient: () => gradient,
+    fillText: (s) => { store.calls++; store.texts.push(String(s)); },
+    strokeText: (s) => { store.calls++; store.texts.push(String(s)); },
+  };
+  const other = () => { store.calls++; };
   return new Proxy(store, {
     get(t, prop) {
       if (prop in t) return t[prop];
-      if (prop === 'measureText') return (s) => ({ width: String(s).length * 10 });
-      if (prop === 'createLinearGradient' || prop === 'createRadialGradient') return () => gradient;
-      if (prop === 'fillText' || prop === 'strokeText') return (s) => { t.calls++; t.texts.push(String(s)); };
-      return () => { t.calls++; };
+      return methods[prop] || other;
     },
     set(t, prop, v) { t[prop] = v; return true; },
   });

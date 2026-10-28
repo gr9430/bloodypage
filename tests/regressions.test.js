@@ -1,9 +1,7 @@
 const test = require('node:test'); const assert = require('node:assert');
-const { load, fakeCtx } = require('./helpers');
+const { load, fakeCtx, input, toFight } = require('./helpers');
 const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'render');
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
-function toFight(m) { while (m.phase === 'intro') CD.stepMatch(m, [input(), input()]); }
 
 test('panopticon spam is not an infinite: a defender holding back escapes', () => {
   const m = CD.createMatch('foucault', 'chomsky');

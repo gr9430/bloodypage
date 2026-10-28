@@ -1,14 +1,9 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match');
+const { load, input, toFight } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match');
 const { CONFIG } = CD;
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 const idle2 = () => [input(), input()];
-function toFight(m) {
-  const events = [];
-  while (m.phase === 'intro') events.push(...CD.stepMatch(m, idle2()));
-  return events;
-}
 function untilPhase(m, phase, inputsFn = idle2, max = 100000) {
   const events = [];
   for (let i = 0; i < max && m.phase !== phase; i++) events.push(...CD.stepMatch(m, inputsFn(i)));
@@ -101,7 +96,6 @@ test('round 4 is sudden death', () => {
   const m = CD.createMatch('foucault', 'chomsky');
   for (let r = 0; r < 3; r++) { toFight(m); m.timer = 1; untilPhase(m, 'intro'); }
   assert.strictEqual(m.round, 4);
-  assert.strictEqual(m.suddenDeath, true);
   assert.strictEqual(m.banner, 'SUDDEN DEATH');
   toFight(m);
   m.fighters[0].hp = 0; m.fighters[0].state = 'ko';

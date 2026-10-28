@@ -35,7 +35,6 @@
       name, look: s.look, assist: s.assist, owner, facing,
       x: facing === 1 ? -60 : CONFIG.width + 60,
       y: CONFIG.floorY,
-      onGround: true,
       phase: 'enter', timer: ENTER_TICKS, effectSpawned: false,
     };
   }
@@ -60,10 +59,7 @@
       } else if (a.phase === 'attack') {
         if (!a.effectSpawned) {
           a.effectSpawned = true;
-          const e = CD.spawnEffect(a.assist.kind, a.owner, a, target, a.assist);
-          e.look = a.look;
-          e.label = a.name;
-          newEffects.push(e);
+          newEffects.push(CD.spawnEffect(a.assist.kind, a.owner, a, target, { ...a.assist, look: a.look, label: a.name }));
           events.push({ type: 'whoosh', player: a.owner });
         }
         if (a.timer <= 0) { a.phase = 'exit'; a.timer = EXIT_TICKS; }

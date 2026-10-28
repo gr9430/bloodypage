@@ -1,9 +1,8 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match');
+const { load, input, toFight } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match');
 const { CONFIG } = CD;
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
-function toFight(m) { while (m.phase === 'intro') CD.stepMatch(m, [input(), input()]); }
 function pair(gap = 70) {
   const a = CD.createFighter(CD.FIGHTERS.foucault, 0, false), b = CD.createFighter(CD.FIGHTERS.chomsky, 1, false);
   a.x = 400; b.x = 400 + gap;

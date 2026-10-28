@@ -1,9 +1,8 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'ai');
+const { load, input, toFight } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat', 'effects', 'citations', 'match', 'ai');
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 const BUTTONS = ['jump', 'attack', 'special', 'cite', 'dashLeft', 'dashRight'];
-function toFight(m) { while (m.phase === 'intro') CD.stepMatch(m, [input(), input()]); }
 
 test('three difficulty levels exist', () => {
   assert.deepStrictEqual(CD.aiLevels, ['easy', 'medium', 'hard']);

@@ -1,7 +1,7 @@
 const test = require('node:test'); const assert = require('node:assert');
-const CD = require('./helpers').load('config', 'roster', 'input', 'fighter', 'combat');
+const { load, input } = require('./helpers');
+const CD = load('config', 'roster', 'input', 'fighter', 'combat');
 
-const input = (o = {}) => ({ ...CD.idleInput(), ...o });
 function close(gap = 70) {
   const a = CD.createFighter(CD.FIGHTERS.foucault, 0, false), b = CD.createFighter(CD.FIGHTERS.chomsky, 1, false);
   a.x = 400; b.x = 400 + gap;
@@ -12,7 +12,7 @@ function swing(a, b, first, ticks = 40) {
   const events = [];
   for (let i = 0; i < ticks; i++) {
     CD.updateFighter(a, i === 0 ? input(first) : input(), b);
-    events.push(...CD.resolveFighterHits(a, b));
+    events.push(...CD.applyHits(CD.findHits(a, b)));
   }
   return events;
 }
@@ -39,7 +39,7 @@ test('blocked hit deals no damage and causes blockstun', () => {
   for (let i = 0; i < 12; i++) {
     CD.updateFighter(a, i === 0 ? input({ attack: true }) : input(), b);
     CD.updateFighter(b, input({ right: true }), a); // b faces left; right is away
-    events.push(...CD.resolveFighterHits(a, b));
+    events.push(...CD.applyHits(CD.findHits(a, b)));
     if (b.state === 'blockstun') break;
   }
   assert.strictEqual(b.hp, 100);
