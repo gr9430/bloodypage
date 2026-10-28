@@ -27,5 +27,44 @@
     }
   }
 
-  Object.assign(CD, { rectsOverlap, separateFighters });
+  // Applies one hit to a defender. Blocking only works against hits coming
+  // from the side the defender faces.
+  function applyHit(defender, hit) {
+    if (defender.state === 'ko') return 'ignored';
+    const away = Math.sign(defender.x - hit.fromX) || -defender.facing;
+    const fromFront = (hit.fromX - defender.x) * defender.facing >= 0;
+    if (defender.blocking && fromFront) {
+      defender.state = 'blockstun';
+      defender.stateTimer = Math.ceil(hit.hitstun / 2);
+      defender.kb = away * hit.knockback / 2;
+      return 'block';
+    }
+    defender.hp = Math.max(0, defender.hp - hit.damage);
+    defender.kb = away * hit.knockback;
+    defender.attack = null;
+    defender.blocking = false;
+    if (defender.hp === 0) {
+      defender.state = 'ko';
+      defender.stateTimer = 0;
+    } else if (hit.stunTicks) {
+      defender.state = 'stunned';
+      defender.stateTimer = hit.stunTicks;
+    } else {
+      defender.state = 'hitstun';
+      defender.stateTimer = hit.hitstun;
+    }
+    return 'hit';
+  }
+
+  function resolveFighterHits(attacker, defender) {
+    const hb = CD.attackHitbox(attacker);
+    if (!hb || !rectsOverlap(hb, CD.hurtbox(defender))) return [];
+    attacker.attack.hasHit = true;
+    const m = attacker.def.moves[attacker.attack.key];
+    const result = applyHit(defender, { damage: m.damage, knockback: m.knockback, hitstun: m.hitstun, fromX: attacker.x });
+    if (result === 'ignored') return [];
+    return [{ type: result, player: attacker.player, x: hb.x + hb.w / 2, y: hb.y + hb.h / 2 }];
+  }
+
+  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, resolveFighterHits });
 })(globalThis.CD = globalThis.CD || {});
