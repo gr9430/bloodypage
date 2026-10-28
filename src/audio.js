@@ -46,7 +46,12 @@
     api.play = function (event) {
       if (api.muted || !ac) return;
       switch (event.type) {
-        case 'hit': noise(0.12, 0.35, 1400); tone('square', 180, 60, 0.12, 0.12); break;
+        case 'hit':
+          noise(0.12, 0.35, 1400);
+          tone('square', 180, 60, 0.12, 0.12);
+          if (event.crit) tone('sawtooth', 660, 1320, 0.18, 0.1);
+          break;
+        case 'fizzle': tone('triangle', 140, 90, 0.15, 0.1); break;
         case 'block': tone('triangle', 900, 600, 0.06, 0.12); break;
         case 'whoosh': noise(0.08, 0.08, 3000); break;
         case 'special': tone('sawtooth', 220, 880, 0.25, 0.08); break;

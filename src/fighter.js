@@ -28,6 +28,7 @@
       crouching: false,
       onGround: true,
       dashDir: 0,
+      meter: 0,
     };
   }
 
@@ -64,7 +65,7 @@
   // swings upward, or dives with down. On the ground, down sweeps and
   // toward the opponent kicks.
   function chooseAttack(f, input) {
-    if (input.special) return 'special';
+    if (input.special && f.meter >= CONFIG.meterMax) return 'special';
     if (!f.onGround) return input.down ? 'diveKick' : 'airPunch';
     if (input.down) return 'sweep';
     const toward = f.facing === 1 ? input.right : input.left;
@@ -97,8 +98,11 @@
     f.blocking = f.state === 'blockstun';
     f.crouching = f.state === 'blockstun' && f.blockCrouch;
 
-    if (isActionable(f) && (input.attack || input.special)) {
+    const specialReady = f.meter >= CONFIG.meterMax;
+    if (isActionable(f) && input.special && !specialReady) events.push({ type: 'fizzle', player: f.player });
+    if (isActionable(f) && (input.attack || (input.special && specialReady))) {
       const key = chooseAttack(f, input);
+      if (key === 'special') f.meter = 0;
       f.attack = { key, frame: 0, hasHit: false };
       f.state = 'attack';
       events.push({ type: 'whoosh', player: f.player });

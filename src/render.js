@@ -13,7 +13,9 @@
 
   function pushRenderEvents(events) {
     for (const e of events) {
-      if (e.type === 'hit') fx.push({ type: 'spark', x: e.x, y: e.y, ttl: 22, max: 22, word: HIT_WORDS[hitCount++ % HIT_WORDS.length], color: '#ffe14d' });
+      if (e.type === 'hit' && e.crit) fx.push({ type: 'spark', x: e.x, y: e.y, ttl: 32, max: 32, word: 'CRITICAL!', color: '#ff8a3d', big: true });
+      else if (e.type === 'hit') fx.push({ type: 'spark', x: e.x, y: e.y, ttl: 22, max: 22, word: HIT_WORDS[hitCount++ % HIT_WORDS.length], color: '#ffe14d' });
+      else if (e.type === 'fizzle') fx.push({ type: 'fizzle', player: e.player, ttl: 40, max: 40 });
       else if (e.type === 'block') fx.push({ type: 'spark', x: e.x, y: e.y, ttl: 18, max: 18, word: 'BLOCKED', color: '#7fd3ff' });
       else if (e.type === 'cite') fx.push({ type: 'bubble', player: e.player, text: e.text, ttl: 70, max: 70 });
       else if (e.type === 'special') fx.push({ type: 'callout', player: e.player, ttl: 50, max: 50 });
@@ -611,8 +613,12 @@
     for (const f of fx) {
       const life = f.ttl / f.max;
       if (f.type === 'spark') {
-        star(ctx, f.x, f.y, 18 + (1 - life) * 22, f.color);
-        outlinedText(ctx, f.word, f.x, f.y - 40 - (1 - life) * 20, 28, f.color);
+        const s = f.big ? 1.6 : 1;
+        star(ctx, f.x, f.y, (18 + (1 - life) * 22) * s, f.color);
+        outlinedText(ctx, f.word, f.x, f.y - 40 * s - (1 - life) * 20, 28 * s, f.color);
+      } else if (f.type === 'fizzle' && match) {
+        const fighter = match.fighters[f.player];
+        outlinedText(ctx, 'NOT YET!', fighter.x, fighter.y - 215 - (1 - life) * 10, 20, '#b8b8c8');
       } else if (f.type === 'bubble' && match) {
         const fighter = match.fighters[f.player];
         speechBubble(ctx, f.text, fighter.x, fighter.y - 205);
@@ -661,12 +667,13 @@
       ctx.fillRect(i === 0 ? x + barW - fillW : x, top, fillW, barH);
       ctx.strokeStyle = INK; ctx.lineWidth = 4;
       ctx.strokeRect(x, top, barW, barH);
-      outlinedText(ctx, f.def.name.toUpperCase(), i === 0 ? x : x + barW, top + barH + 18, 20, '#fff', { align: i === 0 ? 'left' : 'right' });
-      if (i === 1 && m.cpu) plainText(ctx, `CPU · ${m.cpu.toUpperCase()}`, x + barW, top + barH + 42, 15, '#4ab0ff', 'right', LOUD);
+      drawSpecialBar(ctx, f, i, i === 0 ? x : x + barW - 240, top + barH + 5);
+      outlinedText(ctx, f.def.name.toUpperCase(), i === 0 ? x : x + barW, top + barH + 36, 20, '#fff', { align: i === 0 ? 'left' : 'right' });
+      if (i === 1 && m.cpu) plainText(ctx, `CPU · ${m.cpu.toUpperCase()}`, x + barW, top + barH + 58, 15, '#4ab0ff', 'right', LOUD);
       // round-win pips next to the timer
       for (let k = 0; k < CONFIG.roundsToWin; k++) {
         const px = i === 0 ? x + barW - 14 - k * 22 : x + 14 + k * 22;
-        blob(ctx, px, top + barH + 16, 7, 7, k < m.wins[i] ? '#ffe14d' : '#444', px);
+        blob(ctx, px, top + barH + 36, 7, 7, k < m.wins[i] ? '#ffe14d' : '#444', px);
       }
       drawCiteMeter(ctx, m, i);
     }
@@ -674,6 +681,21 @@
     blob(ctx, W / 2, top + 16, 36, 28, '#222', 90);
     outlinedText(ctx, String(Math.max(0, Math.ceil(m.timer / CONFIG.tickRate))), W / 2, top + 17, 32, '#fff');
     plainText(ctx, 'Esc / P: pause', W / 2, top + 58, 12, 'rgba(255,255,255,0.55)');
+  }
+
+  // The specialty bar under the health bar: fills from landed hits.
+  function drawSpecialBar(ctx, f, i, x, y) {
+    const w = 240, h = 13;
+    const full = f.meter >= CONFIG.meterMax;
+    const fillW = w * Math.min(1, f.meter / CONFIG.meterMax);
+    ctx.fillStyle = '#222';
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = full ? (frameTick % 20 < 10 ? '#ff8a3d' : '#ffe14d') : '#e0702a';
+    ctx.fillRect(i === 0 ? x : x + w - fillW, y, fillW, h);
+    ctx.strokeStyle = INK; ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, w, h);
+    const label = full ? `SPECIAL READY [${keyLabel(CD.KEYMAP[i].special)}]` : 'SPECIAL';
+    plainText(ctx, label, i === 0 ? x + w + 8 : x - 8, y + h / 2 + 1, 13, full ? '#ffe14d' : 'rgba(255,255,255,0.7)', i === 0 ? 'left' : 'right', LOUD);
   }
 
   function drawCiteMeter(ctx, m, i) {

@@ -135,6 +135,7 @@ test('cite emits event and assist effect lands in the match', () => {
 test('special spawns its effect in the match', () => {
   const m = CD.createMatch('chomsky', 'foucault');
   toFight(m);
+  m.fighters[0].meter = CD.CONFIG.meterMax;
   CD.stepMatch(m, [input({ special: true }), input()]);
   untilPhase(m, 'never', idle2, 100);
   assert.ok(m.fighters[1].hp < 100);

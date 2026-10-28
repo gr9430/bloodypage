@@ -31,8 +31,10 @@
   // specials can't be chained into an infinite.
   const STUN_IMMUNITY_EXTRA = 60;
 
-  // Applies one hit to a defender. Blocking only works against hits coming
-  // from the side the defender faces.
+  // Applies one hit to a defender and returns 'hit', 'crit', 'block', or
+  // 'ignored'. Blocking only works against hits coming from the side the
+  // defender faces. A hit is critical if it catches the defender mid-attack
+  // (a counter-hit) or if the caller rolled it lucky.
   function applyHit(defender, hit) {
     if (defender.state === 'ko') return 'ignored';
     const away = Math.sign(defender.x - hit.fromX) || -defender.facing;
@@ -46,7 +48,9 @@
       defender.kb = away * hit.knockback / 2;
       return 'block';
     }
-    defender.hp = Math.max(0, defender.hp - hit.damage);
+    const crit = defender.state === 'attack' || !!hit.lucky;
+    const damage = crit ? Math.round(hit.damage * CONFIG.critMultiplier) : hit.damage;
+    defender.hp = Math.max(0, defender.hp - damage);
     defender.kb = away * hit.knockback;
     defender.attack = null;
     defender.blocking = false;
@@ -61,7 +65,15 @@
       defender.state = 'hitstun';
       defender.stateTimer = hit.hitstun;
     }
-    return 'hit';
+    return crit ? 'crit' : 'hit';
+  }
+
+  function luckyRoll(rng) {
+    return rng ? rng() < CONFIG.critChance : false;
+  }
+
+  function hitEvent(result, player, x, y, extra) {
+    return { type: result === 'block' ? 'block' : 'hit', crit: result === 'crit', player, x, y, ...extra };
   }
 
   // Finds a connecting normal attack without applying it yet.
@@ -71,12 +83,12 @@
     return { attacker, defender, hb, move: attacker.def.moves[attacker.attack.key] };
   }
 
-  function applyPending(p) {
+  function applyPending(p, rng) {
     if (p.attacker.attack) p.attacker.attack.hasHit = true;
     const { move, hb } = p;
-    const result = applyHit(p.defender, { damage: move.damage, knockback: move.knockback, hitstun: move.hitstun, level: move.level, fromX: p.attacker.x });
+    const result = applyHit(p.defender, { damage: move.damage, knockback: move.knockback, hitstun: move.hitstun, level: move.level, fromX: p.attacker.x, lucky: luckyRoll(rng) });
     if (result === 'ignored') return [];
-    return [{ type: result, player: p.attacker.player, x: hb.x + hb.w / 2, y: hb.y + hb.h / 2 }];
+    return [hitEvent(result, p.attacker.player, hb.x + hb.w / 2, hb.y + hb.h / 2)];
   }
 
   function resolveFighterHits(attacker, defender) {
@@ -91,13 +103,14 @@
     return [pendingHit(a, b), pendingHit(b, a)].filter(Boolean);
   }
 
-  function applyHits(pending) {
-    return pending.flatMap(applyPending);
+  // rng (optional) rolls random critical hits.
+  function applyHits(pending, rng) {
+    return pending.flatMap((p) => applyPending(p, rng));
   }
 
   function resolveTrade(a, b) {
     return applyHits(findHits(a, b));
   }
 
-  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, resolveFighterHits, findHits, applyHits, resolveTrade });
+  Object.assign(CD, { rectsOverlap, separateFighters, applyHit, luckyRoll, hitEvent, resolveFighterHits, findHits, applyHits, resolveTrade });
 })(globalThis.CD = globalThis.CD || {});

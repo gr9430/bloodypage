@@ -145,3 +145,23 @@ test('controls list dash, low and air attacks, and pause', () => {
   const all = ctx.texts.join('|');
   for (const t of ['Attack', 'D + F', 'S + F', 'In air', 'Dash', 'double-tap', 'Esc / P']) assert.ok(all.includes(t), t);
 });
+test('HUD shows each specialty bar, and READY when full', () => {
+  const m = CD.createMatch('foucault', 'chomsky');
+  m.fighters[0].meter = 40; m.fighters[1].meter = 100;
+  const ctx = fakeCtx();
+  CD.renderMatch(ctx, m, 1);
+  const all = ctx.texts.join('|');
+  assert.ok(all.includes('SPECIAL'));
+  assert.ok(all.includes('SPECIAL READY [L]'), all);
+  assert.ok(!all.includes('SPECIAL READY [G]'));
+});
+test('critical hits and fizzled specials show text', () => {
+  CD.clearRenderEvents();
+  const m = CD.createMatch('foucault', 'chomsky');
+  CD.pushRenderEvents([{ type: 'hit', crit: true, player: 0, x: 500, y: 300 }, { type: 'fizzle', player: 1 }]);
+  const ctx = fakeCtx();
+  CD.renderMatch(ctx, m, 1);
+  const all = ctx.texts.join('|');
+  assert.ok(all.includes('CRITICAL!'));
+  assert.ok(all.includes('NOT YET!'));
+});

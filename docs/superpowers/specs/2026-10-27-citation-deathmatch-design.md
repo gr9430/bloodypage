@@ -43,6 +43,22 @@ Bloody Rage was the starting reference for "a simple two-player browser fighter.
 - Moves carry a `level` (mid, low or overhead) that decides which block stops them.
 - The computer crouch-blocks lows it sees coming and uses sweeps, dashes, jump-ins, upward punches and dive kicks (medium and hard).
 
+## Added 2026-10-28: specialty bar, critical hits, three-button controls
+
+- **Controls:** three buttons. P1 uses F Attack, G Special, H Cite. P2 uses K, L and ;.
+  - Attack on the ground: punch; toward = kick; down = sweep.
+  - Attack in the air: upward punch; down = dive kick.
+  - The low jab was dropped.
+- **Specialty bar:**
+  - It fills only from landed hits: +10 for a hit, +30 for a crit. Blocks, misses and the fighter's own special hits add nothing.
+  - The special needs a full bar and empties it. Pressing early fizzles ("NOT YET!").
+  - The bar carries over between rounds.
+  - Special damage was roughly doubled.
+- **Critical hits:**
+  - Counter-hits (the defender is mid-attack) always crit. Other hits crit 8% of the time, from the match's seeded RNG.
+  - Crits do 1.5× damage and show "CRITICAL!".
+- These supersede the per-button control table above.
+
 ## Non-goals (for now)
 
 - Online play, gamepads, mobile/touch.

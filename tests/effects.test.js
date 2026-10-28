@@ -18,6 +18,7 @@ function run(effects, fighters, ticks) {
 
 test('pressing special emits a special event at startup', () => {
   const [a, b] = vs('foucault');
+  a.meter = CD.CONFIG.meterMax;
   const ev = [];
   for (let i = 0; i < 20; i++) ev.push(...CD.updateFighter(a, input(i === 0 ? { special: true } : {}), b));
   assert.strictEqual(ev.filter(e => e.type === 'special').length, 1);

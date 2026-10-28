@@ -1,8 +1,9 @@
 (function (CD) {
   const { CONFIG } = CD;
 
-  function createMatch(p1Id, p2Id) {
+  function createMatch(p1Id, p2Id, seed = 1) {
     const m = {
+      rng: CD.makeRng(seed),
       fighterIds: [p1Id, p2Id],
       fighters: null,
       cites: [CD.createCitationState(CD.FIGHTERS[p1Id].citations), CD.createCitationState(CD.FIGHTERS[p2Id].citations)],
@@ -23,9 +24,21 @@
     return m;
   }
 
+  // The specialty bar carries over between rounds.
   function resetFighters(m) {
     const [a, b] = m.fighterIds;
+    const meters = m.fighters ? m.fighters.map((f) => f.meter) : [0, 0];
     m.fighters = [CD.createFighter(CD.FIGHTERS[a], 0, false), CD.createFighter(CD.FIGHTERS[b], 1, a === b)];
+    m.fighters.forEach((f, i) => { f.meter = meters[i]; });
+  }
+
+  // Landed hits (not specials, not blocks) fill the attacker's bar.
+  function buildMeter(m, events) {
+    for (const e of events) {
+      if (e.type !== 'hit' || e.fromSpecial) continue;
+      const f = m.fighters[e.player];
+      f.meter = Math.min(CONFIG.meterMax, f.meter + (e.crit ? CONFIG.meterCrit : CONFIG.meterHit));
+    }
   }
 
   function matchWinner(wins, roundsPlayed) {
@@ -92,10 +105,11 @@
     m.assists = as.assists;
     m.effects.push(...as.newEffects);
     events.push(...as.events);
-    const ef = CD.updateEffects(m.effects, m.fighters);
+    const ef = CD.updateEffects(m.effects, m.fighters, m.rng);
     m.effects = ef.effects;
     events.push(...ef.events);
-    events.push(...CD.applyHits(pendingHits));
+    events.push(...CD.applyHits(pendingHits, m.rng));
+    buildMeter(m, events);
     CD.separateFighters(a, b);
     m.timer--;
     checkRoundEnd(m, events);

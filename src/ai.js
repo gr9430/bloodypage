@@ -10,7 +10,7 @@
   // overhead attack is seen, the AI crouches or stands to match it.
   const LEVELS = {
     easy: { reaction: 30, block: 0.1, guard: 0.05, guardLow: 0, dodge: 0, attack: 0.04, punish: 0.02, special: 0.004, cite: 0.003, approach: 0.55, dash: 0, jumpIn: 0.002 },
-    medium: { reaction: 14, block: 0.5, guard: 0.4, guardLow: 0.3, dodge: 0.35, attack: 0.1, punish: 0.1, special: 0.015, cite: 0.02, approach: 0.85, dash: 0.03, jumpIn: 0.006 },
+    medium: { reaction: 14, block: 0.5, guard: 0.55, guardLow: 0.3, dodge: 0.35, attack: 0.1, punish: 0.1, special: 0.015, cite: 0.02, approach: 0.85, dash: 0.03, jumpIn: 0.006 },
     hard: { reaction: 4, block: 0.9, guard: 0.8, guardLow: 0.3, dodge: 0.75, attack: 0.2, punish: 0.35, special: 0.03, cite: 0.06, approach: 1, dash: 0.05, jumpIn: 0.01 },
   };
   const BUTTONS = ['jump', 'attack', 'special', 'cite', 'dashLeft', 'dashRight'];
@@ -18,18 +18,6 @@
   const BLOCK_HOLD = 20;
   const MOVE_RETHINK = 20;
   const MELEE_RANGE = 105;
-
-  // mulberry32: small seeded RNG so a given seed always plays the same way.
-  function makeRng(seed) {
-    let a = seed >>> 0;
-    return function () {
-      a = (a + 0x6d2b79f5) >>> 0;
-      let t = a;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
 
   function incomingEffect(e, me) {
     const cx = e.x + e.w / 2;
@@ -59,7 +47,7 @@
 
   function createAI(getMatch, player, level, seed) {
     const cfg = LEVELS[level];
-    const rng = makeRng(seed);
+    const rng = CD.makeRng(seed);
     let history = [];
     let tick = 0, blockUntil = 0, moveDir = 0, moveUntil = 0, guarding = false, guardCrouch = false;
     let prevThreat = false, prevProjectile = false;

@@ -15,6 +15,7 @@ test('panopticon spam is not an infinite: a defender holding back escapes', () =
     if (b.hp < 100) firstHit = true;
     if (firstHit && CD.isActionable(b)) freeTicks++;
     const awayB = b.facing === 1 ? { left: true } : { right: true };
+    a.meter = CD.CONFIG.meterMax; // worst case: Foucault always has a full bar
     CD.stepMatch(m, [input({ special: CD.isActionable(a) }), input(firstHit ? awayB : {})]);
   }
   assert.ok(firstHit);

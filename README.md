@@ -15,26 +15,34 @@ The first screen asks for **1 Player vs Computer** or **2 Players**:
 | Action | Player 1 | Player 2 |
 |---|---|---|
 | Move / jump / crouch | W A S D | Arrow keys |
-| Punch / Kick | F / G | K / L |
-| Low jab / sweep (crouching) | S + F / S + G | ↓ + K / ↓ + L |
-| Upward punch (in the air) | F while jumping | K while jumping |
-| Dive kick (in the air) | S + G while jumping | ↓ + L while jumping |
-| Dash forward / back | double-tap D / A | double-tap → / ← |
-| Special | H | ; |
-| Cite (summon a scholar) | R | O |
+| **Attack** | F | K |
+| **Special** (needs a full bar) | G | L |
+| **Cite** (summon a scholar) | H | ; |
 | Block | hold away from your opponent | hold away from your opponent |
-| Crouch-block | S + away | ↓ + away |
 | Pause | Esc or P | Esc or P |
 
-Blocking depends on how high the attack is:
-- Lows (low jab and sweep) must be blocked crouching.
-- The dive kick must be blocked standing.
-- Everything else can be blocked either way.
+Attack changes with the direction you hold:
 
-Crouching also ducks under standing punches.
+| Hold | On the ground | In the air |
+|---|---|---|
+| nothing (or away) | punch | upward punch |
+| toward the opponent | kick (longer reach) | upward punch |
+| down | sweep (a low) | dive kick (an overhead) |
+
+- **Dash:** double-tap forward or back.
+- **Blocking:** sweeps must be blocked crouching (down + away). Dive kicks must be blocked standing. Crouching also ducks under standing punches.
+
+**Specialty bar:**
+- The orange bar under your health bar fills only when your attacks land: +10 for a hit, +30 for a critical hit. Blocked attacks and misses add nothing, and neither do hits from your own special.
+- When the bar is full, Special fires your signature move and empties the bar. Pressing it early just shows "NOT YET!".
+- The bar carries over between rounds.
+
+**Critical hits:**
+- A hit is critical if it catches the opponent in the middle of an attack (a counter-hit). Any other hit also has a small random chance.
+- Critical hits do 1.5× damage and fill the bar three times as fast.
 
 On the character select screen in 2-player mode:
-- Each player moves their cursor with left/right and locks in with Punch. Kick unlocks.
+- Each player moves their cursor with left/right and locks in with Attack. Special unlocks.
 - The match starts once both players are ready.
 
 Other keys:

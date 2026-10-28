@@ -35,7 +35,9 @@
   }
 
   function spawnSpecial(fighter, opponent) {
-    return spawnEffect(fighter.def.special.kind, fighter.player, fighter, opponent, fighter.def.special);
+    const e = spawnEffect(fighter.def.special.kind, fighter.player, fighter, opponent, fighter.def.special);
+    e.fromSpecial = true;
+    return e;
   }
 
   // Where a hit "comes from", for knockback direction and blocking.
@@ -48,7 +50,8 @@
     return e.x + e.w < -100 || e.x > CONFIG.width + 100;
   }
 
-  function updateEffects(effects, fighters) {
+  // rng (optional) rolls random critical hits.
+  function updateEffects(effects, fighters, rng) {
     const events = [];
     const kept = [];
     for (const e of effects) {
@@ -72,9 +75,9 @@
         e.hasHit = true;
         const result = CD.applyHit(target, {
           damage: e.damage, knockback: e.knockback, hitstun: e.hitstun, stunTicks: e.stunTicks,
-          fromX: hitOrigin(e, owner, target),
+          fromX: hitOrigin(e, owner, target), lucky: CD.luckyRoll(rng),
         });
-        if (result !== 'ignored') events.push({ type: result, player: e.owner, x: e.x + e.w / 2, y: e.y + e.h / 2 });
+        if (result !== 'ignored') events.push(CD.hitEvent(result, e.owner, e.x + e.w / 2, e.y + e.h / 2, { fromSpecial: !!e.fromSpecial }));
         if (e.kind === 'projectile') e.ttl = 0;
       }
       if (e.ttl > 0 && !offStage(e)) kept.push(e);
